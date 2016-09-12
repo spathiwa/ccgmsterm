@@ -1,0 +1,7 @@
+*~
+*.o
+*.lst
+./*.d64
+obj
+ccgmsterm
+ccgmsterm5.5
