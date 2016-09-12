@@ -1,0 +1,11 @@
+Next release
+------------
+
+ - Fixed a baud rate bug on PAL systems.  Patch by Jim Drew.
+
+ - Source code now cross-assembles under ca65.
+
+5.5 (1988)
+----------
+
+ - Last shareware release.
