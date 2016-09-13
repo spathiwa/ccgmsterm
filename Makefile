@@ -2,7 +2,7 @@
 # Makefile for CCGMS Term, resurrected from antiquity, September 2016
 # (C) Craig Smith, 2016
 # Permission is granted to modify and redistribute this software under
-# the terms of the GPL v3, see LICENSE for details.
+# the terms of the BSD 3-clause license, see LICENSE.txt for details.
 #
 # Building requires cc65 6502 cross-compiler package;
 # see http://cc65.github.io/cc65 or 'git clone https://github.com/cc65/cc65.git'
