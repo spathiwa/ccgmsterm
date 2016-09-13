@@ -4,7 +4,7 @@
 ;
 ; Resurrected and released to world September 5, 2016.
 ; Permission is granted to modify and distribute this work under
-; the terms of the GNU General Public License, version 3.
+; the terms of the MIT license.
 ; See the LICENSE file for details.
 ;
 ; Version 5.5 (ported to build with ca65)
