@@ -1,4 +1,10 @@
 #!/usr/bin/perl 
+#
+# This script bootstraps the script-kiddie-protection encoding of an assembled 
+# 'original' # version of CCGMS Term 5.5 (built with 'make history' target).
+# Alternatively, you could load the assembled ccgmsterm5.5 prg on a C64,
+# execute SYS 15636, and resave it.
+#
 use strict;
 use File::stat;
 		              

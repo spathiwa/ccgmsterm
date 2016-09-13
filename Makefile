@@ -59,7 +59,7 @@ image:	$(OUTPUT_PRG)
 	c1541 -attach $(D64IMAGE) -format "ccgmsterm 5.5,cg" -write $(OUTPUT_PRG) -list
 	
 history:	# couldn't resist
-	@make HISTORICAL=1 OUTPUT_PRG=ccgmsterm5.5 term image
+	@make HISTORICAL=1 OUTPUT_PRG=ccgmsterm5.5 clean term image
 hclean:
 	@make HISTORICAL=1 OUTPUT_PRG=ccgmsterm5.5 clean
 
