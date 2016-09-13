@@ -54,7 +54,7 @@ encode: $(OUTPUT_PRG)
 	rm -f $(OUTPUT_PRG).pre
 
 image:	$(OUTPUT_PRG)
-	@c1541 -h >/dev/null 2>&1 || (echo "c1541 not found in path; skipping creation of .d64 image." ; exit 0)
+	@c1541 -h >/dev/null 2>&1 || (echo "c1541 not found in path; skipping creation of .d64 image." ; exit 1)
 	@dd if=/dev/zero of=$(D64IMAGE) bs=256 count=683 >/dev/null 2>&1
 	c1541 -attach $(D64IMAGE) -format "ccgmsterm 5.5,cg" -write $(OUTPUT_PRG) -list
 	
