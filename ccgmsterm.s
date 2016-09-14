@@ -115,8 +115,13 @@ pnt11  = $028d
 pnt12  = $029b
 pnt13  = $029c
 pnt14  = $02a1
-pbuf   = $1000
-pbuf2  = $0400
+.if historical
+pbuf   = $1000 ; else defined later, right before 'start'
+;there was no good reason for this arbitrary location, and it made us set
+;the pc to leave a gap for it.
+.endif
+pbuf2  = $0400 ; when this buffer was moved to screen memory, the gap where
+;it was used to be wasn't closed, leaving the area at label 'garbage'
 xmoscn = pbuf2
 can    = 24
 ack    = 6
@@ -161,14 +166,14 @@ z  = 219
 ; mods by greg pfoutz,w/permission
 ;version 3.0 -- aug 1985
 ;
-*=$0801
+;*=$0801
 .byt $0d,$08,$0a,00,$9e,$32,$30
 .byt $36,$33,20,$39,00,00,00
  jmp start
 ;
 punter ; source code $0812
 ;referenced by old $c000 addresses
-*=$0812  ;pxxxxx
+;*=$0812  ;pxxxxx
 p49152  lda #$00
  .byt $2c
 p49155  lda #$03
@@ -885,6 +890,8 @@ garbage .byt $bd,$80
  .byt $e3
 ;end of garbage
 *=$1020  ; i don't remember if there was a reason for this
+.else ; !historical
+pbuf .byt 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 .endif ; historical
 
 ;start of terminal program
