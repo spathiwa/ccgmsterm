@@ -170,7 +170,9 @@ z  = 219
 ; mods by greg pfoutz,w/permission
 ;version 3.0 -- aug 1985
 ;
-;*=$0801
+.if historical
+*=$0801
+.endif
 .byt $0d,$08,$0a,00,$9e,$32,$30
 .byt $36,$33,20,$39,00,00,00
  jmp start
