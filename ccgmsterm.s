@@ -8,7 +8,7 @@
 ; the terms of the BSD 3-clause license.
 ; See the LICENSE.txt file for details.
 ;
-; Version 5.5 (ported to build with ca65)
+; Version 5.5/5.5+ (ported to build with ca65)
 ;
 ; This file contains combined source from the original SEQ files (named
 ; 5a.gs,5b.gs,5c.gs and 5d.gs) in CBM Assembler 64 format and chained
@@ -162,6 +162,8 @@ z  = 219
 ;Manipulation System Terminal
 ;by Craig Smith
 ;
+;version 2016 -- sep 2016
+;version 5.5+ -- feb 1988
 ;version 5.5 -- jan 1988
 ;version 5.0 -- jan 1988
 ;version 4.5 -- may 1987
@@ -1537,10 +1539,14 @@ termtp
 msgtxt
 .byt 13,$93,8,5,14,18,32,28,32,c,32,129,32,c,32,158,32,g,32,30
 .byt 32,m,32,31,32,cs,32,156,' ! ',5,32
+.if .not(historical)
+.byt t,'erminal ',v,'ers 2016a ',00
+.else
 .if v55plus
 .byt ' ',t,'erminal ',v,'ers 5.5+ ',00
 .else
 .byt ' ',t,'erminal ',v,'ers 5.5  ',00
+.endif
 .endif
 author  .byt '    by ',c,'raig ',cs,'mith   ',146,151,00
 ;

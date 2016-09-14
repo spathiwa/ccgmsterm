@@ -1,7 +1,12 @@
-Next release
-------------
+Version 2016a
+-------------
  - Fixed a baud rate bug on PAL systems.  Patch by Jim Drew.
+ - Free up some memory by removing gap at location of former Punter buffer
+ - Changed version banner to '2016a' unless making historical build
 
+Version 5.5+ (09/14/2016)
+------------------------
+ - Reconstructed 5.5+ changed and added to source
 
 Version 5.5 (09/11/2016)
 ------------------------
