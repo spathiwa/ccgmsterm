@@ -1,9 +1,9 @@
 #!/usr/bin/perl 
 #
 # This script bootstraps the script-kiddie-protection encoding of an assembled 
-# 'original' # version of CCGMS Term 5.5 (built with 'make history' target).
-# Alternatively, you could load the assembled ccgmsterm5.5 prg on a C64,
-# execute SYS 15636, and resave it.
+# 'original' version of CCGMS Term 5.5 or 5.5+ (built with 'make history'
+# target). Alternatively, you could load the assembled ccgmsterm5.5 prg
+# on a C64, execute SYS15636 (SYS15631 for 5.5+), and resave it.
 #
 use strict;
 use File::stat;
@@ -19,6 +19,11 @@ die if (!-f $file);
 
 my $sb = stat($file);
 my $filesize = $sb->size;
+
+if ($filesize == $expectedFileLength - 5) { # account for change in 5.5+
+	$expectedFileLength -= 5;
+	$endEncode -= 5;
+}
 
 open (F, "<$file") || die;
 binmode(F);

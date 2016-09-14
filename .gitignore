@@ -3,5 +3,6 @@
 *.lst
 *.d64
 obj
+tmp
 ccgmsterm
 ccgmsterm5.5

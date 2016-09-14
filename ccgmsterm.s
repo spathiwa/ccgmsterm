@@ -27,15 +27,19 @@
 ;
 
 .feature labels_without_colons 
-.feature pc_assignment
 .feature loose_string_term
 
 ; Conditional compilation symbols:
+v55plus = 1	; Enable the bug fix and minor changes made in 5.5+
+
 .if .not(.defined(historical)) .or .blank(historical)
 historical = 0	; define to 1 to make this source produce an exact image of ccgms term 5.5, bug per bug.
 ;setting it to zero fixes the bdpal bug, removes internal padding between
 ;the punter code and ccgms code, and disabled the 'script kiddie' protection
 ;(see 'decode' routine)
+.endif
+.if historical
+.feature pc_assignment
 .endif
 
 ;.opt err        ;no list!!!
@@ -861,12 +865,16 @@ drtyp2 .byt 'e','e','r','s','e'
 drtyp3 .byt 'l','q','g','r','l'
 drform .byt 158,2,157,157,5,6,32,159,14,153,32,63,32,0
 ;the following was garbage memory in the gap between the punter
-;source at *=$0812 and the main ccgms source at *=$1020.
+;source at *=$0812 and the main ccgms source (originally *=$1020).
+;the last 32 bytes, from $1000-$101f, were pbuf, a buffer used by
+;punter. the rest of it used to be pbuf2, a larger punter buffer,
+;but it was moved to screen memory so download progress would be
+;more entertaining and the gap at its former location never closed..
 ;apparently the cbm assembler left uninitialized memory when
-;you reset the pc by using *=addr. the following bytes are
-;what happened to be there in the ccgms term 5.5 that was
-;distributed, and i've reproduced those bytes here so this
-;source will assemble to produce that image exactly.
+;you reset the pc by using *=addr rather than filling with zeroes.
+;the following bytes are what happened to be there in the ccgms 
+;term 5.5 that was distributed, and i've reproduced those bytes here
+;so this source will assemble to produce that image exactly.
 .if historical
 garbage .byt $bd,$80 
  .byt $08,$c9,$20,$f0,$04,$e8,$4c,$f6,$0e,$8e,$6e,$08,$a9,$00,$8d,$5a
@@ -1527,7 +1535,11 @@ termtp
 msgtxt
 .byt 13,$93,8,5,14,18,32,28,32,c,32,129,32,c,32,158,32,g,32,30
 .byt 32,m,32,31,32,cs,32,156,' ! ',5,32
+.if v55plus
+.byt ' ',t,'erminal ',v,'ers 5.5+ ',00
+.else
 .byt ' ',t,'erminal ',v,'ers 5.5  ',00
+.endif
 author  .byt '    by ',c,'raig ',cs,'mith   ',146,151,00
 ;
 instxt
@@ -3099,8 +3111,13 @@ dowsfn
  inx
  lda #'w'
  sta inpbuf+2,x
+.if v55plus
+;lda protoc   ;*** 5.5 bug fix
+;bne dowksp
+.else
  lda protoc
  bne dowksp
+.endif
  lda mulcnt
  bne dowksp
  ldy pbuf+27
@@ -5610,7 +5627,11 @@ pydtxt .byt '%d',0
 atdtxt .byt 'atdt ',0
 atptxt .byt 'atdp ',0
 pretxt .byt 'ate0',13,0
+.if v55plus
+pr2txt .byt 'atm1',13,0
+.else
 pr2txt .byt 'atm0',13,0
+.endif
 pr3txt .byt 'atv1',13,0
 bustxt .byt b,'usy.',0
 nantxt .byt n,'o carrier.',0
