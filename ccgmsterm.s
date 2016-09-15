@@ -6953,7 +6953,12 @@ endsav .byt 0
 endprg .byt 0
 ampag1
 .byt 147,10,155,15,14,'   ',28,c,129,c,158,g,30,m,31,cs,156,'! ',5,t,'erm '
-.byt '5.5 by ',c,'raig ',cs,'mith',13,13,' ',152,'(',w,'arning! ',t,'his m'
+.if historical
+.byt '5.5 '
+.else
+.byt '2016a '
+.endif
+.byt 'by ',c,'raig ',cs,'mith',13,13,' ',152,'(',w,'arning! ',t,'his m'
 .byt 'essage will self-',13,'  destruct when you use the buffer!)',13,13,18
 .byt 158,o,'ther ',m,'isc. ',c,'ommands:',146,13,13,5,cs,h,f,t,' ',cs,t,o,cp
 .byt '      ',159,d,'isconnect. (',n,'on-',h,'ayes)',13,31,c,28,'=   ',5,cs
@@ -6973,9 +6978,25 @@ ampag1
 .byt 'fer pointer.',13,153,o,'n-line, ',5,c,t,cr,l,'-',b,' <color-code> '
 .byt 153,'changes',13,'the background color.   ',5,cp,'ress a key...',0
 ampag2
-.byt 147,10,155,15,14,'      ',28,c,129,c,158,g,30,m,31,cs,5,'! ',t,'erm 5'
-.byt '.5, (',c,') 1988',13,' by ',c,'raig ',cs,'mith, ',ca,'ll ',cr,'ight'
-.byt 's ',cr,'eserved.',13,13,153,t,'his program is ',39,cs,'hare-',w,'are'
+.byt 147,10,155,15,14,'      ',28,c,129,c,158,g,30,m,31,cs,5,'! ',t,'erm '
+.if .not(historical)
+.byt '2016a (',c,') 2016',13
+.else
+.byt '5.5, (',c,') 1988',13
+.endif
+.byt ' by ',c,'raig ',cs,'mith, ',ca,'ll ',cr,'ight'
+.byt 's ',cr,'eserved.',13,13
+.if .not(historical)
+.byt 153,t,'his program is open-source.',13
+.byt 'Redistribution and use in source and',13
+.byt 'binary forms, with or without modifi-',13
+.byt 'cation, are permitted under the terms',13
+.byt 'of the BSD 3-clause license.',13,13
+.byt 'For details, or to contribute, visit:',13
+.byt 158,' https://github.com/spathiwa/ccgmsterm',13,13
+.byt 153
+.else
+.byt 153,t,'his program is ',39,cs,'hare-',w,'are'
 .byt '.',39,13,cy,'ou are granted a limited license to',13,'use, copy, &'
 .byt ' distribute this program',13,'in its ',155,u,n,m,o,d,i,f,i,e,d,' ',153
 .byt 'form.  ',i,'f you have',13,"any suggestions or comments, if you'd"
@@ -6989,7 +7010,8 @@ ampag2
 .byt 'ource code requests please include',13
 .byt 'a disk in a reusable disk mailer,',13,'sufficient postage, and a sh'
 .byt 'ort note',13,'about how you',39,'d like to change it.',13,154,t,'han'
-.byt 'ks, and ',i,' hope you like the',13,'new version!!           ',5,cp
-.byt 'ress a key...',0,0
+.byt 'ks, and ',i,' hope you like the',13,'new version!!           '
+.endif
+.byt 5,cp,'ress a key...',0,0
 endall
 .end
