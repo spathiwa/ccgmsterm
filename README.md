@@ -8,7 +8,7 @@ Permission is granted to modify and distribute this work under
 the terms of the BSD 3-Clause license.
 See LICENSE.txt file for details.*
 
-Version 5.5 (ported to build with ca65)
+Version 5.5+ (ported to build with ca65)
 
 This was the last authentic/official version released by me in January 1988.
 Over the years others created various hacked versions, both good and bad.
