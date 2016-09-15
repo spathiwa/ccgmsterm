@@ -133,30 +133,6 @@ nak    = 21
 eot    = 4
 soh    = 1
 cpmeof = 26
-ca = 193  ;cap letters!
-b  = 194
-c  = 195
-d  = 196
-e  = 197
-f  = 198
-g  = 199
-h  = 200
-i  = 201
-l  = 204
-o  = 207
-m  = 205
-n  = 206
-cp = 208
-q  = 209
-cr = 210
-cs = 211
-t  = 212
-u  = 213
-v  = 214
-w  = 215
-cx = 216
-cy = 217
-z  = 219
 ;
 ;Commodore Color Graphics
 ;Manipulation System Terminal
@@ -849,21 +825,21 @@ pnt123 pha
  pla
  jmp chrout
  brk
-ptrtxt .byt 13,13,5,n,e,w,32,cp,'unter ',00
-upltxt .byt u,'p',00
-dowtxt .byt d,'own',00
+ptrtxt .byt 13,13,5,'NEW Punter ',00
+upltxt .byt 'Up',00
+dowtxt .byt 'Down',00
 lodtxt .byt 'load.',13,00
-flntxt .byt e,'nter filename: ',00
+flntxt .byt 'Enter filename: ',00
 xfrmed .byt 13,158,32,32,0
 xfrtxt .byt 'loading: ',159,0
-xf2txt .byt 13,5,'  (',cp,'ress ',c,'= to abort.)',13,13,00
-abrtxt .byt ca,'borted.',13,00
-mrgtxt .byt 153,32,g,'ood ',b,'locks: ',5,'000',5,'   -   '
- .byt 153,b,'ad ',b,'locks: ',5,'000',13,0
-gfxtxt .byt 153,g,'raphics',00
-asctxt .byt 159,ca,cs,c,i,i,00
-rdytxt .byt ' ',t,'erminal ',cr,'eady.',155,13,13,00
-dsctxt .byt 13,5,d,'isconnected.',13,13,0
+xf2txt .byt 13,5,'  (','Press C= to abort.)',13,13,00
+abrtxt .byt 'Aborted.',13,00
+mrgtxt .byt 153,32,'Good Blocks: ',5,'000',5,'   -   '
+ .byt 153,'Bad Blocks: ',5,'000',13,0
+gfxtxt .byt 153,'Graphics',00
+asctxt .byt 159,'ASCII',00
+rdytxt .byt ' Terminal Ready.',155,13,13,00
+dsctxt .byt 13,5,'Disconnected.',13,13,0
 drtype .byt 'd','s','p','u','r'
 drtyp2 .byt 'e','e','r','s','e'
 drtyp3 .byt 'l','q','g','r','l'
@@ -901,7 +877,7 @@ garbage .byt $bd,$80
  .byt $8e,$6e,$08,$ec,$77,$08,$f0,$05,$90,$03,$4c,$9c,$15,$c9,$2c,$d0
  .byt $e3
 ;end of garbage
-*=$1020  ; i don't remember if there was a reason for this
+*=$1020  ; skip original punter buffers
 .else ; !historical
 pbuf .byt 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 .endif ; historical
@@ -1537,35 +1513,35 @@ termtp
  ldy #>rdytxt
  jmp outstr
 msgtxt
-.byt 13,$93,8,5,14,18,32,28,32,c,32,129,32,c,32,158,32,g,32,30
-.byt 32,m,32,31,32,cs,32,156,' ! ',5,32
+.byt 13,$93,8,5,14,18,32,28,' C ',129,' C ',158,' G ',30
+.byt ' M ',31,' S ',156,' ! ',5,32
 .if .not(historical)
-.byt t,'erminal ',v,'ers 2016a ',00
+.byt 'Terminal Vers 2016a ',00
 .else
 .if v55plus
-.byt ' ',t,'erminal ',v,'ers 5.5+ ',00
+.byt ' Terminal Vers 5.5+ ',00
 .else
-.byt ' ',t,'erminal ',v,'ers 5.5  ',00
+.byt ' Terminal Vers 5.5  ',00
 .endif
 .endif
-author  .byt '    by ',c,'raig ',cs,'mith   ',146,151,00
+author  .byt '    by Craig Smith   ',146,151,00
 ;
 instxt
-.byt 5,'  ',18,f,'1',146,32,150,u,'pload          '
-.byt 5,18,f,'2',146,32,150,cs,'end/',cr,'ead file',13
-.byt 5,'  ',18,f,'3',146,32,158,d,'ownload        '
-.byt 5,18,f,'4',146,32,158,b,'uffer commands',13
-.byt 5,'  ',18,f,'5',146,32,153,d,'isk ',c,'ommand    '
-.byt 5,18,f,'6',146,32,153,d,'irectory',13
-.byt 5,'  ',18,f,'7',146,32,30,d,'ialer/',cp,'arams   '
-.byt 5,18,f,'8',146,32,30,cs,'witch terms',13,0
+.byt 5,'  ',18,'F1',146,32,150,'Upload          '
+.byt 5,18,'F2',146,32,150,'Send/Read file',13
+.byt 5,'  ',18,'F3',146,32,158,'Download        '
+.byt 5,18,'F4',146,32,158,'Buffer commands',13
+.byt 5,'  ',18,'F5',146,32,153,'Disk Command    '
+.byt 5,18,'F6',146,32,153,'Directory',13
+.byt 5,'  ',18,'F7',146,32,30,'Dialer/Params   '
+.byt 5,18,'F8',146,32,30,'Switch terms',13,0
 instx2
-.byt 31,c,28,'=',5,18,f,'1',146,32,159,m,'ulti-',cs,'end    '
-.byt 31,c,28,'=',5,18,f,'3',146,32,159,m,'ulti-',cr,'eceive',13
-.byt 31,c,28,'=',5,18,f,'5',146,32,154,cs,'end ',d,'ir.     '
-.byt 31,c,28,'=',5,18,f,'7',146,32,154,cs,'creen to ',b,'uff.',13,13,0
+.byt 31,'C',28,'=',5,18,'F1',146,32,159,'Multi-Send    '
+.byt 31,'C',28,'=',5,18,'F3',146,32,159,'Multi-Receive',13
+.byt 31,'C',28,'=',5,18,'F5',146,32,154,'Send Dir.     '
+.byt 31,'C',28,'=',5,18,'F7',146,32,154,'Screen to Buff.',13,13,0
 ;
-mlswrn .byt 13,5,b,'uffer too big - ',cs,'ave or ',c,'lear first!',13,0
+mlswrn .byt 13,5,'Buffer too big - Save or Clear first!',13,0
 ;
 dirmdm .byt 0
 ;directory routine
@@ -2043,8 +2019,8 @@ pickup
  ldy #>pcktxt
  jsr outstr
  jmp main
-pcktxt .byt 13,5,o,'ff-hook.',13,13,0
-dsktxt .byt 5,13,d,'isk#'
+pcktxt .byt 13,5,'Off-hook.',13,13,0
+dsktxt .byt 5,13,'Disk#'
 dsktx2 .byt '**>      ',157,157,157,157,157,157,00
 dskdtx .byt '8 9 1011'
 f5      ;disk command
@@ -2780,10 +2756,10 @@ xmoty4
  stx pbuf+27
  rts
 ;
-xmo1er .byt 13,t,'ransfer cancelled.',0
-xmo2er .byt 13,e,o,t,' not acknowledged.',0
-xmo3er .byt 13,t,'oo many bad blocks!',0
-xmo4er .byt 13,cs,'ync lost!',0
+xmo1er .byt 13,'Transfer cancelled.',0
+xmo2er .byt 13,'EOT not acknowledged.',0
+xmo3er .byt 13,'Too many bad blocks!',0
+xmo4er .byt 13,'Sync lost!',0
 xmoupl
  jsr xmosnd
  jmp xmodon
@@ -2824,7 +2800,7 @@ xmodnp
  jsr chrout
 xmodna
  jmp abortx
-xmdtxt .byt 13,13,5,cx,m,'odem ',0
+xmdtxt .byt 13,13,5,'XModem ',0
 xferfn
  pha
  lda protoc
@@ -3394,7 +3370,7 @@ outcp2  pla
  and #$7f
 outcp3  jmp chrout
 ;
-xmpoly .byt 13,5,m,'ulti-transfer - ',cp,'unter only.',13,0
+xmpoly .byt 13,5,'Multi-transfer - Punter only.',13,0
 cf1  ;multi-send
  jsr cosave
  lda protoc
@@ -3641,12 +3617,12 @@ goob4  inc 1837,x
  bpl goob4
  rts
 ;
-msntxt .byt 13,14,5,18,32,m,'ulti-',cs,'end ',146,32,45,32
- .byt cs,'elect files:',13,13,0
-moptxt .byt 154,32,cy,'es/',n,'o/',q,'uit/',cs,'kip8/',d,'one/'
- .byt ca,'ll',13,0
-mrctxt .byt 13,14,5,18,32,m,'ulti-',cr,'eceive ',13,13
- .byt 159,w,'aiting for header...',c,'= aborts.',13,0
+msntxt .byt 13,14,5,18,32,'Multi-Send ',146,32,45,32
+ .byt 'Select files:',13,13,0
+moptxt .byt 154,32,'Yes/No/Quit/Skip8/Done/'
+ .byt 'All',13,0
+mrctxt .byt 13,14,5,18,32,'Multi-Receive ',13,13
+ .byt 159,'Waiting for header...C= aborts.',13,0
 ;multi - choose files
 mltdir
  lda diskdv
@@ -3930,14 +3906,14 @@ drpol7
  sta $fe
  rts
 ;
-buftxt .byt 5,b,'uffer ',00
+buftxt .byt 5,'Buffer ',00
 buftx2 .byt ' bytes free.      ',13,2,'open  ',2,'close  ',2,'erase  '
 .byt 2,'transfer',13,2,'load  ',2,'save   ',2,'print  ',2,'view: ',0
-opntxt .byt o,'pen  ',00
-clotxt .byt c,'losed',00
-erstxt .byt e,'rase ',b,'uffer! - ',2,'yes or ',2,'no?    ',157,157,157,0
-snbtxt .byt 13,13,cs,'ending ',b,'uffer...',13,13,00
-dontxt .byt 13,13,5,d,'one.',13,0
+opntxt .byt 'Open  ',00
+clotxt .byt 'Closed',00
+erstxt .byt 'Erase Buffer! - ',2,'yes or ',2,'no?    ',157,157,157,0
+snbtxt .byt 13,13,'Sending Buffer...',13,13,00
+dontxt .byt 13,13,5,'Done.',13,0
 bufmsg
  lda #<buftxt
  ldy #>buftxt
@@ -4295,9 +4271,9 @@ chgben
  pla
  rts
 ;
-bufpdt .byt 13,13,d,'evice: ',0
-bufpda .byt 13,cs,'ec.',ca,'.: ',0
-bufpdp .byt $93,13,cp,'rinting...',13,0
+bufpdt .byt 13,13,'Device: ',0
+bufpda .byt 13,'Sec.A.: ',0
+bufpdp .byt $93,13,'Printing...',13,0
 bufpro
  lda #<bufpdt
  ldy #>bufpdt
@@ -4394,25 +4370,25 @@ entcol .byt 5
 hilcol .byt 158
 phhtxt
 .byt 19,13
-.byt 5,18,161,c,cr,cs,cr,' keys',182,146,154,' - ',m,'ove '
-.byt 5,18,161,cr,e,t,u,cr,n,182,146,154,' - ',cs,'elect',13
-.byt 159,2,'dial ',u,'nlisted #  ',2,'edit ',c,'urrent #',13
-.byt 2,'call ',c,'urrent #   ',2,'a-',d,'ial ',ca,'ll ',cs,'elect',29,20
-.byt 'd',157,148,'e',13,2,'reverse ',ca,'ll      ',2,'x-',cr,'eturn to '
-.byt m,'enu',13
-.byt 152,3,5,0,18,'           >>>',cp,'hone ',b,'ook<<<           '
+.byt 5,18,161,'CRSR keys',182,146,154,' - ','Move '
+.byt 5,18,161,'RETURN',182,146,154,' - ','Select',13
+.byt 159,2,'dial Unlisted #  ',2,'edit Current #',13
+.byt 2,'call Current #   ',2,'a-','Dial All Select',29,20
+.byt 'd',157,148,'e',13,2,'reverse All      ',2,'x-Return to '
+.byt 'Menu',13
+.byt 152,3,5,0,18,'           >>>','Phone Book<<<           '
 .byt 29,20,32,157,148,32,13,0
 stattx .byt 152,3,21,0,18,'                                      ',29,20
 .byt 32,157,148,32,13,145,18,0
 staptx .byt 152,3,21,0,18,32,0
-hp1msg .byt u,'se +/-/',cr,e,t,u,cr,n,' to select:',0
+hp1msg .byt 'Use +/-/RETURN to select:',0
 toetxt .byt 3,6,0,0
-curbtx .byt 3,22,1,159,n,'ame:',13,cp,'hone:',13,32,b,'aud: ',29,29,29,29
-.byt '  ',t,'erm: ',29,29,29,29,29,29,29,29,'  ',t,'ry: ',29
+curbtx .byt 3,22,1,159,'Name:',13,'Phone:',13,32,'Baud: ',29,29,29,29
+.byt '  Term: ',29,29,29,29,29,29,29,29,'  Try: ',29
 curbt2 .byt 29,20,29,20,145,13,0
-gfxbbs .byt g,'raphics',0
-ascbbs .byt ca,cs,c,i,i,'   ',0
-nontxt .byt 5,'(',n,'one)             ',13,0
+gfxbbs .byt 'Graphics',0
+ascbbs .byt 'ASCII   ',0
+nontxt .byt 5,'(None)             ',13,0
 clrlnt .byt 3,22,7,'                  ',3,22,7,5,0
 empbbs .byt 151,164,164,164,164,164,164,164,164,164,164,164,164
  .byt 164,164,164,164,164,164
@@ -5237,14 +5213,14 @@ dalun4  lda inpbuf,x
  bpl dalun4
  jmp dial
 ;
-calctx .byt c,'all ',c,'urrent ',n,'umber...',0
-dalstx .byt d,'ial ',cs,'elected ',n,'umbers...',0
-dulstx .byt d,'ial ',u,'nlisted ',n,'umber.',0
-unlstx .byt u,'nlisted.',13,0
-daltxt .byt d,'ialing...',0
-wcrtxt .byt w,'aiting for carrier...',0
-pabtxt .byt d,'ialing...  ',cp,'ress ',cs,t,o,cp,' to abort.',0
-rdttxt .byt 32,cr,'edial, ',t,'erminal, or ',ca,'bort? ',0
+calctx .byt 'Call Current Number...',0
+dalstx .byt 'Dial Selected Numbers...',0
+dulstx .byt 'Dial Unlisted Number.',0
+unlstx .byt 'Unlisted.',13,0
+daltxt .byt 'Dialing...',0
+wcrtxt .byt 'Waiting for carrier...',0
+pabtxt .byt 'Dialing...  Press STOP to abort.',0
+rdttxt .byt 32,'Redial, Terminal, or Abort? ',0
 numbuf
 .byt 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 numptr .byt 0
@@ -5641,9 +5617,9 @@ pr2txt .byt 'atm1',13,0
 pr2txt .byt 'atm0',13,0
 .endif
 pr3txt .byt 'atv1',13,0
-bustxt .byt b,'usy.',0
-nantxt .byt n,'o carrier.',0
-conntx .byt c,'onnect!',0
+bustxt .byt 'Busy.',0
+nantxt .byt 'No carrier.',0
+conntx .byt 'Connect!',0
 tdelay .byt 00
 smrtdl
  lda motype
@@ -6085,11 +6061,11 @@ prwcmc
  adc #'1'
  sta edfktx
  rts
-edtmtx .byt $93,5,13,13,e,'dit which macro?',13
-.byt 158,'(',c,t,cr,l,32,f,'1,',f,'3,',f,'5,',f,'7, or ',cr,e,t,u,cr,n,32
+edtmtx .byt $93,5,13,13,'Edit which macro?',13
+.byt 158,'(','CTRL F1,F3,F5,F7, or RETURN '
 .byt 'to abort.) ',5,3,2,18,0
-edtrtx .byt 19,13,5,e,'dit ',f
-edfktx .byt '1 macro...<',c,t,cr,l,'-',cx,'> to end:',13,13,13,13,0
+edtrtx .byt 19,13,5,'Edit F'
+edfktx .byt '1 macro...<CTRL-X> to end:',13,13,13,13,0
 wchmac .byt 0
 edtmac
  lda #<edtmtx
@@ -6523,30 +6499,30 @@ f7chsb
  jmp term
 ;
 scracf .byt 's0:',0
-svctxt .byt $93,13,5,f,'ilename: ',0
+svctxt .byt $93,13,5,'Filename: ',0
 conffn .byt 'ccgms/phone',0
 f7thob .byt 2
-f7mtxt .byt $93,16,14,5,'   ',d,'ialer/',cp,'arameters',13
+f7mtxt .byt $93,16,14,5,'   Dialer/Parameters',13
  .byt 31,'   ',163,163,163,163,163,163,163,163,163,163,163,163,163,163
  .byt 163,163,163,13,5
 f7mtx1 .byt 16
-.byt 32,2,'auto-',d,'ialer/',cp,'hone ',b,'ook',13,13
-.byt 32,2,'baud ',cr,'ate   -',13,13
+.byt 32,2,'auto-Dialer/Phone Book',13,13
+.byt 32,2,'baud Rate   -',13,13
 .byt 32,2,'duplex      -',13,13
-.byt 32,2,'modem ',t,'ype  -',13,13
+.byt 32,2,'modem Type  -',13,13
 .byt 32,2,'protocol    -',13,13
-.byt 32,2,'edit ',m,'acros',13,13
-.byt 32,2,'load/',2,'save ',cp,'hone ',b,'ook & ',c,'onfig.',13,13
+.byt 32,2,'edit Macros',13,13
+.byt 32,2,'load/',2,'save Phone Book & Config.',13,13
 visaut .byt 16
-.byt 32,2,'view ',ca,"uthor's ",m,'essage',13,13,0
-f7mtx2 .byt 32,2,'quit - ',e,'xit to ',b,ca,cs,i,c,13
-prret .byt 3,20,0,5,cp,'ress <',158,18,cr,e,t,u,cr,n,146,5,'> to abort.'
- .byt 13,13,5,c,'all the ',152,d,'igital ',150,cp,158,ca,153,i,159,n
- .byt 154,t,32,5,cp,'alace...',17,157,157,157,157,157,157,157
+.byt 32,2,'view ',"Author's ",'Message',13,13,0
+f7mtx2 .byt 32,2,'quit - Exit to BASIC',13
+prret .byt 3,20,0,5,'Press <',158,18,'RETURN',146,5,'> to abort.'
+ .byt 13,13,5,'Call the ',152,'Digital ',150,'P',158,'A',153,'I',159,'N'
+ .byt 154,'T',32,5,'Palace...',17,157,157,157,157,157,157,157
  .byt 30,'(',158,'817',30,')',158,'281',30,'-',158,'7009',5,145,13,0
-prret2 .byt 3,20,7,159,cr,e,t,u,cr,n,13,0
-ttdtxt .byt 3,8,31,18,161,42,182,146,t,'one ',0
-ttptxt .byt 3,8,31,18,161,42,182,146,cp,'ulse',0
+prret2 .byt 3,20,7,159,'RETURN',13,0
+ttdtxt .byt 3,8,31,18,161,42,182,146,'Tone ',0
+ttptxt .byt 3,8,31,18,161,42,182,146,'Pulse',0
 ttntxt .byt 3,8,33,'      ',0
 ;
 bpsspd .byt 44,1,94,1,144,1,194,1,244,1,38,2,176,4,96,9 ;rates
@@ -6664,12 +6640,12 @@ prdsp4  jsr chrout
 ;
 prmopt .byt <op1txt,>op1txt,<op2txt,>op2txt,<op3txt,>op3txt
 prmlen .byt 4,17,6
-op1txt .byt f,'ull',h,'alf'
+op1txt .byt 'Full','Half'
 op2txt .byt '1650 compatibles '
- .byt h,e,cs,32,i,i,'/',m,'itey ',m,'o  1660/modem300    '
- .byt '1660 + ',c,d,'        ',m,cp,cp,' 1064         '
- .byt '1670/',h,'ayes       ',cp,'aradyne ',d,t,u,'     '
-op3txt .byt cp,'unter',cx,m,'odem'
+ .byt 'HES II/Mitey Mo  1660/modem300    '
+ .byt '1660 + CD        MPP 1064         '
+ .byt '1670/Hayes       Paradyne DTU     '
+op3txt .byt 'Punter','XModem'
 prmtab
  lda #$0d
  jsr chrout
@@ -6879,7 +6855,7 @@ motype .byt $00 ;0=1650, 1=hes ii
                 ;6=paradyne dtu
 ;
 phbmem ;reserve mem for phbook
-.byt 0,6,d,'ig. ',cp,'aint ',cp,'alace ','281-7009'
+.byt 0,6,'Dig. Paint Palace ','281-7009'
 .byt 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 .byt 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 .byt 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -6952,42 +6928,42 @@ protoc .byt 0; punter/xmodem flag
 endsav .byt 0
 endprg .byt 0
 ampag1
-.byt 147,10,155,15,14,'   ',28,c,129,c,158,g,30,m,31,cs,156,'! ',5,t,'erm '
+.byt 147,10,155,15,14,'   ',28,'C',129,'C',158,'G',30,'M',31,'S',156
+.byt '! ',5,'Term '
 .if historical
 .byt '5.5 '
 .else
 .byt '2016a '
 .endif
-.byt 'by ',c,'raig ',cs,'mith',13,13,' ',152,'(',w,'arning! ',t,'his m'
-.byt 'essage will self-',13,'  destruct when you use the buffer!)',13,13,18
-.byt 158,o,'ther ',m,'isc. ',c,'ommands:',146,13,13,5,cs,h,f,t,' ',cs,t,o,cp
-.byt '      ',159,d,'isconnect. (',n,'on-',h,'ayes)',13,31,c,28,'=   ',5,cs
-.byt t,o,cp,'      ',159,cp,'ick up phone.  ',39,39,13,5,cs,h,f,t,' ',$5f,'  '
-.byt '       ',153,t,'oggle cursor type',13,31,c,28,'=   ',5,$5f,'         '
+.byt 'by Craig Smith',13,13,' ',152,'(Warning! This '
+.byt 'message will self-',13,'  destruct when you use the buffer!)',13,13,18
+.byt 158,'Other Misc. Commands:',146,13,13,5,'SHFT STOP'
+.byt '      ',159,'Disconnect. (Non-Hayes)',13,31,'C',28,'=   ',5
+.byt 'STOP      ',159,'Pick up phone.  ',39,39,13,5,'SHFT ',$5f,'  '
+.byt '       ',153,'Toggle cursor type',13,31,'C',28,'=   ',5,$5f,'         '
 .byt 153
-.byt t,'oggle ',ca,l,l,'-',c,ca,cp,cs,' mode',13,5,cs,h,f,t,' ',c,t,cr,l
-.byt ' 1-4  ',158,t,'ake a ',39,'snapshot',39,' of the',13,'              '
-.byt '  screen into storage 1-4',13,31,c,28,'=   ',5,c,t,cr,l,' 1-4  ',158,cr
-.byt 'ecall snapshot 1-4',13,'               (',cs,'waps w/current screen)'
-.byt 13,5,c,t,cr,l,' ',f,'1-',f,'7     ',156,m,'acros.',13,13
-.byt 159,ca,'t disk prompt, "#x" changes to dev#x.',13
-.byt 158,d,'ouble-click ',31,c,28,'= ',5,f,'7 ',158,'to clear buffer',13
+.byt 'Toggle ALL-CAPS mode',13,5,'SHFT CTRL'
+.byt ' 1-4  ',158,'Take a ',39,'snapshot',39,' of the',13,'              '
+.byt '  screen into storage 1-4',13,31,'C',28,'=   ',5,'CTRL 1-4  ',158
+.byt 'Recall snapshot 1-4',13,'               (Swaps w/current screen)'
+.byt 13,5,'CTRL F1-F7     ',156,'Macros.',13,13
+.byt 159,'At disk prompt, "#x" changes to dev#x.',13
+.byt 158,'Double-click ',31,'C',28,'= ',5,'F7 ',158,'to clear buffer',13
 .byt 'before storing screen.',13
-.byt 154,ca,'t the'
+.byt 154,'At the'
 .byt ' buffer cmd prompt, ',5,'< ',154,'and ',5,'>',13,154,'move the buf'
-.byt 'fer pointer.',13,153,o,'n-line, ',5,c,t,cr,l,'-',b,' <color-code> '
-.byt 153,'changes',13,'the background color.   ',5,cp,'ress a key...',0
+.byt 'fer pointer.',13,153,'On-line, ',5,'CTRL-B <color-code> '
+.byt 153,'changes',13,'the background color.   ',5,'Press a key...',0
 ampag2
-.byt 147,10,155,15,14,'      ',28,c,129,c,158,g,30,m,31,cs,5,'! ',t,'erm '
+.byt 147,10,155,15,14,'      ',28,'C',129,'C',158,'G',30,'M',31,'S',5,'! Term '
 .if .not(historical)
-.byt '2016a (',c,') 2016',13
+.byt '2016a (C) 2016',13
 .else
-.byt '5.5, (',c,') 1988',13
+.byt '5.5, (C) 1988',13
 .endif
-.byt ' by ',c,'raig ',cs,'mith, ',ca,'ll ',cr,'ight'
-.byt 's ',cr,'eserved.',13,13
+.byt ' by Craig Smith, All Rights Reserved.',13,13
 .if .not(historical)
-.byt 153,t,'his program is open-source.',13
+.byt 153,'This program is open-source.',13
 .byt 'Redistribution and use in source and',13
 .byt 'binary forms, with or without modifi-',13
 .byt 'cation, are permitted under the terms',13
@@ -6996,22 +6972,22 @@ ampag2
 .byt 158,' https://github.com/spathiwa/ccgmsterm',13,13
 .byt 153
 .else
-.byt 153,t,'his program is ',39,cs,'hare-',w,'are'
-.byt '.',39,13,cy,'ou are granted a limited license to',13,'use, copy, &'
-.byt ' distribute this program',13,'in its ',155,u,n,m,o,d,i,f,i,e,d,' ',153
-.byt 'form.  ',i,'f you have',13,"any suggestions or comments, if you'd"
-.byt 13,'like a copy of the ',m,l,' source code and',13,'permission to mod'
+.byt 153,'This program is ',39,'Share-Ware'
+.byt '.',39,13,'You are granted a limited license to',13,'use, copy, &'
+.byt ' distribute this program',13,'in its ',155,'UNMODIFIED ',153
+.byt 'form.  If you have',13,"any suggestions or comments, if you'd"
+.byt 13,'like a copy of the ML source code and',13,'permission to mod'
 .byt "ify it, or if you'd",13,'just like to send a couple of bucks',13
-.byt 'or whatever you think the term is',13,'worth (and greatly increase t'
-.byt 'he',13,'likelihood of future versions),',13,'write me at:   ',158,c,'r'
-.byt 'aig ',cs,'mith',13,'               7437 ',d,'eaver ',d,'r.,',13,'   '
-.byt '            ',f,'t. ',w,'orth, ',t,cx,' 76180',13,'               '
-.byt ca,'ttn: ',c,c,g,m,cs,13,159,cs
-.byt 'ource code requests please include',13
-.byt 'a disk in a reusable disk mailer,',13,'sufficient postage, and a sh'
-.byt 'ort note',13,'about how you',39,'d like to change it.',13,154,t,'han'
-.byt 'ks, and ',i,' hope you like the',13,'new version!!           '
+.byt 'or whatever you think the term is',13,'worth (and greatly increase '
+.byt 'the',13,'likelihood of future versions),',13,'write me at:   ',158
+.byt 'Craig Smith',13,'               7437 Deaver Dr.,',13,'   '
+.byt '            Ft. Worth, TX 76180',13,'               '
+.byt 'Attn: CCGMS',13,159
+.byt 'Source code requests please include',13
+.byt 'a disk in a reusable disk mailer,',13,'sufficient postage, and a '
+.byt 'short note',13,'about how you',39,'d like to change it.',13,154
+.byt 'Thanks, and I hope you like the',13,'new version!!           '
 .endif
-.byt 5,cp,'ress a key...',0,0
+.byt 5,'Press a key...',0,0
 endall
 .end
