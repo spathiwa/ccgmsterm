@@ -6538,6 +6538,7 @@ bdpal  .byt $94,$70,$8a,$a9,$9a
 bdrati .byt $72,$c3,$bb,$f3,$a8
 bdaddc .byt $81,$02,$d0,$e5,$60
 parabd .byt '%s',0
+baudmi .byte $00
 baud
  ldx motype
  cpx #$06
@@ -6549,6 +6550,11 @@ baudst
  asl a
  tax
  lda bpsspd,x
+ sta baudmi
+ dec baudmi ;decrement a little off the top to keep the buffers good. sets it slightly below selected baud rate
+ dec baudmi ;a quick and dirty alternative to flow control. for 2400 this should work fine.
+ dec baudmi
+ lda baudmi
  sta $02
  lda bpsspd+1,x
  sta $03
