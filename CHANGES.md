@@ -3,6 +3,9 @@ Version 2016a
  - Fixed a baud rate bug on PAL systems.  Patch by Jim Drew.
  - Free up some memory by removing gap at location of former Punter buffer
  - Changed version banner to '2016a' unless making historical build
+ - Changed author's message.
+ - Fixed 2400 baud support using code from "Toward 2400" article
+   in Transactor, Vol 9 Issue 3.
 
 Version 5.5+ (09/14/2016)
 ------------------------
