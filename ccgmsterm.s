@@ -31,6 +31,7 @@
 
 ; Conditional compilation symbols:
 v55plus = 1	; Enable the bug fix and minor changes made in 5.5+
+hack24  = 1	; Enable 2400 baud hack from alwyz
 
 .if .not(.defined(historical)) .or .blank(historical)
 historical = 0	; define to 1 to make this source produce an exact image of ccgms term 5.5, bug per bug.
@@ -6538,7 +6539,6 @@ bdpal  .byt $94,$70,$8a,$a9,$9a
 bdrati .byt $72,$c3,$bb,$f3,$a8
 bdaddc .byt $81,$02,$d0,$e5,$60
 parabd .byt '%s',0
-baudmi .byte $00
 baud
  ldx motype
  cpx #$06
@@ -6550,11 +6550,14 @@ baudst
  asl a
  tax
  lda bpsspd,x
- sta baudmi
- dec baudmi ;decrement a little off the top to keep the buffers good. sets it slightly below selected baud rate
- dec baudmi ;a quick and dirty alternative to flow control. for 2400 this should work fine.
- dec baudmi
- lda baudmi
+.if .not(historical) .and hack24
+ ; temporary hackish fix for now in lieu of rewriting chrin/chrout routines
+ cpx #14  ; if its <2400 baud, skip patch
+ bcc baudst2
+ sec
+ sbc #$03 ; decrement 2400 baud rate a little so we can keep up.
+baudst2
+.endif
  sta $02
  lda bpsspd+1,x
  sta $03
