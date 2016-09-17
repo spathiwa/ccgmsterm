@@ -30,8 +30,9 @@
 .feature loose_string_term
 
 ; Conditional compilation symbols:
-v55plus = 1	; Enable the bug fix and minor changes made in 5.5+
-hack24  = 1	; Enable 2400 baud hack from alwyz
+v55plus  = 1	; Enable the bug fix and minor changes made in 5.5+
+toward24 = 1	; Enable "Toward 2400" new modem chrout/chkin/nmi routines by George Hug
+hack24   = 0	; Enable 2400 baud hack from alwyz
 
 .if .not(.defined(historical)) .or .blank(historical)
 historical = 0	; define to 1 to make this source produce an exact image of ccgms term 5.5, bug per bug.
@@ -151,6 +152,8 @@ cpmeof = 26
 ;
 .if historical
 *=$0801
+.else
+.org $0801
 .endif
 .byt $0d,$08,$0a,00,$9e,$32,$30
 .byt $36,$33,20,$39,00,00,00
@@ -895,6 +898,9 @@ dummyb .byt 0
 .endif
 stadec
  sei
+.if toward24 .and(.not(historical))
+ jsr rssetup
+.endif
 .if historical
  lda #<disnmi
  sta nmivec
@@ -6550,7 +6556,7 @@ baudst
  asl a
  tax
  lda bpsspd,x
-.if .not(historical) .and hack24
+.if hack24 .and(.not(historical))
  ; temporary hackish fix for now in lieu of rewriting chrin/chrout routines
  cpx #14  ; if its <2400 baud, skip patch
  bcc baudst2
@@ -6620,7 +6626,11 @@ baud4
  sta 662
  lda 667
  sta 668
+.if toward24 .and(.not(historical))
+ rts
+.else
  jmp outvec ;change chrout vec.
+.endif
 prdspd
  lda baudrt
  beq prdsp2
@@ -6747,6 +6757,8 @@ notogm  lda #<ttntxt
  ldy #>ttntxt
  bne prtogm
 ;
+.if historical .or(.not(toward24))
+; this is the historical replacement
 prtvec .byt $ca,$f1
 outvec  ;change chrout vec.
  lda $0326
@@ -6842,6 +6854,7 @@ outv12 lda $02a1
  lda #$11
  sta $dd0e
 outv13  rts
+.endif
 ;;; .fil 5d.gs
 ;dummy label for mccc expansion
 ;in mccc vers, .fil mccc.exp
@@ -6849,7 +6862,7 @@ outv13  rts
 ctrlv  jmp main2
 ;
 config
-baudrt .byt $06 ;1200 baud def
+baudrt .byt $07 ;1200 baud def
 tonpul .byt 0   ;0=pulse, 1=tone
 mopo1  .byt $20 ;pick up
 mopo2  .byt $00 ;hang up
@@ -6862,6 +6875,11 @@ motype .byt $00 ;0=1650, 1=hes ii
                 ;4=vip mpp 1064
                 ;5=1670/hayes
                 ;6=paradyne dtu
+;
+.if toward24 .and (.not(historical))
+.include "newmodem2400.s"
+.endif
+
 ;
 phbmem ;reserve mem for phbook
 .byt 0,6,'Dig. Paint Palace ','281-7009'
