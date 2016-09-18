@@ -44,7 +44,7 @@ rssetup lda     #<nmi64
         sta     $0318
         sty     $0319
         lda     #<nchkin
-       ldy     #>nchkin
+        ldy     #>nchkin
         sta     $031e
         sty     $031f
         lda     #<nbsout

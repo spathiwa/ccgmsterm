@@ -5741,8 +5741,8 @@ hayda4  stx numptr
  cmp #$0d
  bne hayda4
  jsr clrchn
- lda 667      ;clear modinput buf
- sta 668
+ lda $029b      ;clear modinput buf
+ sta $029c
  lda #$e0
  ldx motype
  cpx #$05
@@ -5753,8 +5753,8 @@ haydap  sta $a2
 hayda5
  lda $a2
  bne hayda5
- lda 667      ;clear modinput buf
- sta 668
+ lda $029b      ;clear modinput buf
+ sta $029c
  lda #$00
  sta $a1
  sta $a2
@@ -5777,8 +5777,8 @@ hayda6  ldx #$05
  lda #$0d
  jsr chrout
  jsr clrchn
- lda 667
- lda 668
+ lda $029b
+ lda $029c
  jmp dlabrt
 hayda7
  lda $a1
@@ -5825,8 +5825,8 @@ haydll  jsr getin
  beq haydlo
  lda $a2
  bne haydll
-haydlo  lda 667
- sta 668
+haydlo  lda $029b
+ sta $029c
  jsr clrchn
  rts
 ;
@@ -6609,28 +6609,29 @@ baud3
  jsr $ba28  ;fac1=fac1*stored
 baud4
  jsr $b7f7  ;to y/a
- sty 665    ;timing const.
- sta 666
+ sty $0299    ;timing const.
+ sta $029a
  ldy bdoutl
  lda bdouth
- sty 661    ;non-std bps
- sta 662
- lsr 662
- ror 661
- lda 661
+ sty $0295    ;non-std bps
+ sta $0296
+ lsr $0296
+ ror $0295
+ lda $0295
  sec
  sbc #100   ;b/2-100
- sta 661
- lda 662
+ sta $0295
+ lda $0296
  sbc #0
- sta 662
- lda 667
- sta 668
+ sta $0296
+ lda $029b
+ sta $029c
 .if toward24 .and(.not(historical))
- rts
-.else
- jmp outvec ;change chrout vec.
+ jsr rssetup ; use George Hug's NMI/chkin/receive  kernel patches
+; but for some reason his chrout/bsout doesn't work for 2400
+; baud.  Keep our own chrout vector impl:
 .endif
+ jmp outvec ;change chrout vec.
 prdspd
  lda baudrt
  beq prdsp2
@@ -6757,8 +6758,6 @@ notogm  lda #<ttntxt
  ldy #>ttntxt
  bne prtogm
 ;
-.if historical .or(.not(toward24))
-; this is the historical replacement
 prtvec .byt $ca,$f1
 outvec  ;change chrout vec.
  lda $0326
@@ -6854,7 +6853,6 @@ outv12 lda $02a1
  lda #$11
  sta $dd0e
 outv13  rts
-.endif
 ;;; .fil 5d.gs
 ;dummy label for mccc expansion
 ;in mccc vers, .fil mccc.exp
