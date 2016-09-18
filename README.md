@@ -9,6 +9,12 @@ the terms of the BSD 3-Clause license.
 See LICENSE.txt file for details.*
 
 Version 5.5+ (ported to build with ca65)
+Version 2016a (5.5+ with 2400 baud fix, ...)
+
+If you're just looking for a .d64 of the latest image, see the 'dist' folder,
+or the 'original' folder for the historical 5.5+.
+
+If you want to build from source or contribute, read on.
 
 This was the last authentic/official version released by me in January 1988.
 Over the years others created various hacked versions, both good and bad.
