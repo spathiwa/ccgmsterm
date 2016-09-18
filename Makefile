@@ -27,14 +27,16 @@ LST		= $(LSTF:%=$(OBJDIR)/%)
 # Or just use the 'make history' rule [sorry :-)]
 #
 HISTORICAL?=0
+VERSION ?= 2016a
 
 ifneq (0,$(HISTORICAL))
 	HISTARG = -Dhistorical=$(HISTORICAL)
 	HISTENCODE = encode
+	VERSION = 5.5+
+	OUTPUT_PRG=ccgmsterm$(VERSION)
 endif
 
 all:	term image
-	echo $(OBJ)
 
 term:	$(OUTPUT_PRG) $(HISTENCODE)
 
@@ -56,12 +58,17 @@ encode: $(OUTPUT_PRG)
 image:	$(OUTPUT_PRG)
 	@c1541 -h >/dev/null 2>&1 || (echo "c1541 not found in path; skipping creation of .d64 image." ; exit 1)
 	@dd if=/dev/zero of=$(D64IMAGE) bs=256 count=683 >/dev/null 2>&1
-	c1541 -attach $(D64IMAGE) -format "ccgmsterm 5.5,cg" -write $(OUTPUT_PRG) -list
+	c1541 -attach $(D64IMAGE) -format "ccgmsterm $(VERSION),cg" -write $(OUTPUT_PRG) -list
+
+dist:	image
+	@mkdir -p dist
+	cp -f $(D64IMAGE) dist
+
 	
 history:	# couldn't resist
-	@make HISTORICAL=1 OUTPUT_PRG=ccgmsterm5.5 clean term image
+	@make HISTORICAL=1 clean term image
 hclean:
-	@make HISTORICAL=1 OUTPUT_PRG=ccgmsterm5.5 clean
+	@make HISTORICAL=1 clean
 
 clean:
 	rm -f $(OBJ) $(LST) $(OUTPUT_PRG) $(D64IMAGE) ./*~
