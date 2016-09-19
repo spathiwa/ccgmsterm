@@ -32,6 +32,7 @@
 ; Conditional compilation symbols:
 v55plus  = 1	; Enable the bug fix and minor changes made in 5.5+
 toward24 = 1	; Enable "Toward 2400" new modem chrout/chkin/nmi routines by George Hug
+xmodfix  = 1    ; Enable XModem last char fix, reverse engineered from ccgms_6.01x, author uncredited since the jerk who did it took out my name in the author's message.
 hack24   = 0	; Enable 2400 baud hack from alwyz
 
 .if .not(.defined(historical)) .or .blank(historical)
@@ -2443,9 +2444,13 @@ xmsnd2
  jsr getin
  ldx $90  ;status
  stx xmoend
+.if historical .or(.not(xmodfix))  ; This was a bug which would lose the last char of an xmodem send
  beq xmsnd4
 xmsnd3
  lda #cpmeof
+.else
+xmsnd3
+.endif
 xmsnd4
  sta (xmobuf),y
  clc
@@ -2456,6 +2461,9 @@ xmsnd4
  bcs xmsnd5
  ldx xmoend
  beq xmsnd2
+.if xmodfix .and(.not(historical)) ; correct the xmodem bug
+ lda #cpmeof
+.endif
  bne xmsnd3
 xmsnd5
  sta (xmobuf),y
