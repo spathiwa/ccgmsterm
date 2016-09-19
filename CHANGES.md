@@ -6,6 +6,7 @@ Version 2016a
  - Changed author's message.
  - Fixed 2400 baud support using code from "Toward 2400" article
    in Transactor, Vol 9 Issue 3.
+ - Fixed XModem upload last character drop bug
 
 Version 5.5+ (09/14/2016)
 ------------------------
