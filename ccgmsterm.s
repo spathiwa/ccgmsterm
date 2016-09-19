@@ -2444,13 +2444,13 @@ xmsnd2
  jsr getin
  ldx $90  ;status
  stx xmoend
-; There was a bug here in which would lose the last char of an xmodem send
+; There was a bug here in which we would lose the last char of an xmodem send
 ; (saved incorrectly as $1a)
 ; The bug was discovered and patched in ccgms_6.01x by Tony Postmayer.
 ; His fix patched the follow bne with EA 2C (NOP/BIT) causing the follow LDA to be
 ; skipped unless it was branched to from below.
 ; Modern fix just removes the branch and moves the lda.
-.if historical .or(.not(xmodfix))  
+.if historical .or(.not(xmodfix))
  beq xmsnd4
 xmsnd3
  lda #cpmeof
