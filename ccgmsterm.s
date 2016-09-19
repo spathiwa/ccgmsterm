@@ -6860,7 +6860,11 @@ outv13  rts
 ctrlv  jmp main2
 ;
 config
+.if toward24 .and (.not(historical))
 baudrt .byt $07 ;1200 baud def
+.else
+baudrt .byt $06 ;2400 baud def
+.endif
 tonpul .byt 0   ;0=pulse, 1=tone
 mopo1  .byt $20 ;pick up
 mopo2  .byt $00 ;hang up
