@@ -4,6 +4,8 @@
 ; by George Hug
 ; Transactor, Vol 9, Issue 3
 ;
+ccgms   = 1 ; disable features not needed by ccgms term
+
 ribuf   = $f7
 robuf   = $f9
 baudof  = $0299
@@ -22,14 +24,17 @@ ogetin  = $f13e
 findfn  = $f30f
 devnum  = $f31f
 nofile  = $f701
-;* = $ce00 
-; dispatch, not needed
-;xx00 jmp rssetup
-;xx03 jmp inable
-;xx06 jmp disabl
-;xx09 jmp rsget
-;xx0c jmp rsout
-;     nop
+
+.if .not(ccgms)
+* = $ce00 
+xx00 jmp rssetup
+xx03 jmp inable
+xx06 jmp disabl
+xx09 jmp rsget
+xx0c jmp rsout
+     nop
+.endif
+
 ; start-bit times
 strt24 .word   459     ; 2400
 strt12 .word   1090    ; 1200
@@ -55,11 +60,12 @@ rssetup lda     #<nmi64
         ldy     #>nchrin
         sta     $0324
         sty     $0325
-; we don't need getin; change in semantics messes up ccgms
-        ;lda     #<ngetin
-        ;ldy     #>ngetin
-        ;sta     $032a
-        ;sty     $032b
+.if .not(ccgms) ; we don't need getin; change in semantics messes up ccgms term
+        lda     #<ngetin
+        ldy     #>ngetin
+        sta     $032a
+        sty     $032b
+.endif
         rts
 ;-------------------------
 nmi64   pha	; new nmi handler
