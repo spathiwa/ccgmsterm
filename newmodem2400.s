@@ -4,7 +4,9 @@
 ; by George Hug
 ; Transactor, Vol 9, Issue 3
 ;
-ccgms   = 1 ; disable features not needed by ccgms term
+
+; define ccgms to disable features not needed by ccgms term
+; (defined when included by ccgmsterm.s)
 
 ribuf   = $f7
 robuf   = $f9
@@ -25,7 +27,7 @@ findfn  = $f30f
 devnum  = $f31f
 nofile  = $f701
 
-.if .not(ccgms)
+.ifndef ccgms
 * = $ce00 
 xx00 jmp rssetup
 xx03 jmp inable
@@ -60,7 +62,7 @@ rssetup lda     #<nmi64
         ldy     #>nchrin
         sta     $0324
         sty     $0325
-.if .not(ccgms) ; we don't need getin; change in semantics messes up ccgms term
+.ifndef ccgms ; we don't need getin; change in semantics messes up ccgms term
         lda     #<ngetin
         ldy     #>ngetin
         sta     $032a

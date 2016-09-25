@@ -741,6 +741,8 @@ slEnd = * ; ccgms instead will define the send and receive buf to $ce00/$cf00
 ; in the same place it used for the kernal rs232 buffers
 .else
 slReceiveBuf = *
+.res 256
 slSendBuf = slReceiveBuf+256
+.res 256
 slEnd = slSendBuf+256
 .endif

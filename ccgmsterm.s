@@ -29,21 +29,31 @@
 .feature labels_without_colons 
 .feature loose_string_term
 
-; Conditional compilation symbols:
-v55plus  = 1	; Enable the bug fix and minor changes made in 5.5+
-toward24 = 1	; Enable "Toward 2400" new modem chrout/chkin/nmi routines by George Hug
-xmodfix  = 1	; Enable XModem last char fix
-hack24   = 0	; Enable 2400 baud hack from alwyz
-
-.if .not(.defined(historical)) .or .blank(historical)
-historical = 0	; define to 1 to make this source produce an exact image of ccgms term 5.5, bug per bug.
-;setting it to zero fixes the bdpal bug, removes internal padding between
-;the punter code and ccgms code, and disabled the 'script kiddie' protection
-;(see 'decode' routine)
+.ifndef historical
+historical = 0	; define to 1 to make this source produce an exact image of
+;ccgms term 5.5, bug per bug.  ;setting it to zero fixes the bdpal bug,
+;removes internal padding between ;the punter code and ccgms code, and
+;disabled the 'script kiddie' protection ;(see 'decode' routine)
 .endif
+
+; MODERN = feature enabled only  modern build, not historical
+.define MODERN .not(historical)
+
+;
+; Conditional compilation symbols:
+;
+toward24 = MODERN	; Enable "Toward 2400" new modem chrout/chkin/nmi routines by George Hug
+xmodfix  = MODERN	; Enable XModem last char fix
+
+v55plus  = 1		; Enable the bug fix and minor changes made in 5.5+
+hack24   = 0		; Enable 2400 baud hack from alwyz (superceded by toward24 fix)
+swiftlib = 0;MODERN	; Experimental/unfinished
+
 .if historical
 .feature pc_assignment
 .endif
+
+ccgms  = 1
 
 ;.opt err        ;no list!!!
 modreg = $dd01
@@ -53,7 +63,7 @@ frmevl = $ad9e
 outnum = $bdcd
 nmivec = $0318
 status = $90
-lognum = $05
+modemln= $05
 modem  = $02
 secadr = $03
 setlfs = $ffba
@@ -106,6 +116,10 @@ tempcl = $06
 mulfil = $c200
 rinput = $cf00
 routpt = $ce00
+.if swiftlib
+slReceiveBuf = rinput
+slSendBuf = routpt
+.endif
 bufend = routpt
 mulcnt = 2047
 mulfln = 2046
@@ -287,7 +301,7 @@ pnt41 pha
  sta $ba
  pla
  rts
-pnt42 ldx #$05
+pnt42 ldx #modemln
  jsr chkout
  ldx #$00
 pnt43 lda pnt27,y
@@ -396,7 +410,7 @@ pnt59 lda #':'
  lda ($64),y
  sta pbuf+9
  jsr pnt80
- ldx #$05
+ ldx #modemln
  jsr chkout
  ldy #$00
 pnt60 lda ($64),y
@@ -899,9 +913,6 @@ dummyb .byt 0
 .endif
 stadec
  sei
-.if toward24 .and(.not(historical))
- jsr rssetup
-.endif
 .if historical
  lda #<disnmi
  sta nmivec
@@ -959,11 +970,21 @@ stodv3
  sta bufptr     ;& open rs232
  lda newbuf+1
  sta bufptr+1
+.if toward24
+ jsr rssetup
+.endif
+.if swiftlib
+ jsr ercopn
+.else
  jsr rsopen
+.endif
  jmp init
 rsopen          ;open rs232 file
+.if swiftlib
+ jsr slShutdown
+.endif
  jsr clall
- lda #lognum
+ lda #modemln
  ldx #modem
  ldy #secadr
  jsr setlfs
@@ -1143,11 +1164,22 @@ upplow
 mnback
  jmp main2
 mainop
+.if swiftlib
+ ldx motype
+ cpx #mtswiftl
+ bne :+
+ jsr slPutByte   ; .A=byte -> .CS=err#.A
+ jmp :++
+:
+.endif
  pha
- ldx #lognum
+ ldx #modemln
  jsr chkout
  pla
  jsr chrout
+.if swiftlib
+:
+.endif
  ldx grasfl
  beq maing
  jsr satoca
@@ -1189,13 +1221,24 @@ specc2
  ldx #23
  stx 53272
 specc3
- ldx #lognum
+.if swiftlib
+ ldx motype
+ cpx #mtswiftl
+ beq :+
+.endif
+ ldx #modemln
  jsr chkin
  jsr getin
  cmp #$00
+.if swiftlib
+ beq :++
+ ldx status
+ bne :++
+.else
  beq mnback
  ldx status
  bne mnback
+.endif
  pha
  jsr clrchn
  pla
@@ -1211,6 +1254,15 @@ main4
 bufchk
  jsr putbuf
  jmp contn
+.if swiftlib
+:
+ jsr slGetByte   ; .A=byte, .X=notEmpty -> .CS=err#.A
+ bcs :+
+ cpx #0
+ bne nopass
+:
+ jmp mnback
+.endif
 putbuf
  ldx buffoc
  beq buffot
@@ -1523,14 +1575,14 @@ termtp
 msgtxt
 .byt 13,$93,8,5,14,18,32,28,' C ',129,' C ',158,' G ',30
 .byt ' M ',31,' S ',156,' ! ',5,32
-.if .not(historical)
-.byt 'Terminal Vers 2016a ',00
-.else
+.if historical
 .if v55plus
 .byt ' Terminal Vers 5.5+ ',00
 .else
 .byt ' Terminal Vers 5.5  ',00
 .endif
+.else
+.byt 'Terminal Vers 2016a ',00
 .endif
 author  .byt '    by Craig Smith   ',146,151,00
 ;
@@ -1640,7 +1692,7 @@ drcont
  jsr chrout
  lda #3  ;screen
  sta 153 ;def input dev
- ldx #5
+ ldx #modemln
  jsr chkout
  ldy #0
 drcon2 jsr getin
@@ -1657,7 +1709,7 @@ drcodl lda $a2
  jsr clrchn
  lda #$0d
  jsr chrout
- ldx #5
+ ldx #modemln
  jsr chkin
 drcon3  jsr getin
  lda $029b
@@ -2173,7 +2225,7 @@ prtmc0
  pha
  ldx macmdm
  bne prtmc2
- ldx #5
+ ldx #modemln
  jsr chkout
  pla
  pha
@@ -2187,7 +2239,7 @@ prtmc1
  sta $a2
 prtmcd lda $a2
  bne prtmcd
- ldx #5
+ ldx #modemln
  jsr chkin
  jsr getin
  cmp #$00
@@ -2450,12 +2502,12 @@ xmsnd2
 ; His fix patched the follow bne with EA 2C (NOP/BIT) causing the follow LDA to be
 ; skipped unless it was branched to from below.
 ; Modern fix just removes the branch and moves the lda.
-.if historical .or(.not(xmodfix))
+.if xmodfix
+xmsnd3
+.else ; xmodfix
  beq xmsnd4
 xmsnd3
  lda #cpmeof
-.else  ; xmodfix
-xmsnd3
 .endif ; xmodfix
 xmsnd4
  sta (xmobuf),y
@@ -2467,7 +2519,7 @@ xmsnd4
  bcs xmsnd5
  ldx xmoend
  beq xmsnd2
-.if xmodfix .and(.not(historical)) ; correct the xmodem bug
+.if xmodfix
  lda #cpmeof
 .endif
  bne xmsnd3
@@ -2476,7 +2528,7 @@ xmsnd5
  jsr clrchn
 xmsnd6
  jsr xmrclr
- ldx #5
+ ldx #modemln
  jsr chkout
  ldy #0
 xmsnd7
@@ -2512,7 +2564,7 @@ xmsnen
  lda #0
  sta xmoend
 xmsne1
- ldx #5
+ ldx #modemln
  jsr chkout
  lda #eot
  jsr chrout
@@ -2629,7 +2681,7 @@ xmoex2
  lda xmstat
  cmp #4
  bcc xmoex4
- ldx #5
+ ldx #modemln
  jsr chkout
  ldy #8
  lda #can
@@ -2655,7 +2707,7 @@ xmorcp
  lda #0
  sta xmoend
 xmorc1
- ldx #5
+ ldx #modemln
  jsr chkout
  lda #nak
  jsr chrout
@@ -2743,7 +2795,7 @@ xmorc9
  jsr goobad
 xmorak
  inc xmowbf
- ldx #5
+ ldx #modemln
  jsr chkout
  lda #ack
  jsr chrout
@@ -3523,7 +3575,7 @@ mlssab jsr clrchn
  jsr coback
  jsr gong
  jmp term
-mlshdr  ldx #5
+mlshdr  ldx #modemln
  jsr chkout
  ldx #16
  lda #09  ;ctrl-i
@@ -3564,7 +3616,7 @@ mlrwat
  ldx 653
  cpx #02
  beq mulab2
- ldx #05
+ ldx #modemln
  jsr chkin
  jsr getin
  cmp #09
@@ -3583,7 +3635,7 @@ mlrflp
  ldx 653
  cpx #02
  beq mulab2
- ldx #5
+ ldx #modemln
  jsr chkin
  jsr getin
  cmp #0
@@ -5132,7 +5184,7 @@ dalag
  jmp adnum   ;redial for curr/unl
 dalslc
  lda motype
- cmp #5
+ cmp #mt1670
  bcs dalsl0
  lda #<stattx
  ldy #>stattx
@@ -5266,7 +5318,7 @@ adnum
  lda #$0d
  jsr chrout
  lda motype
- cmp #$05
+ cmp #mt1670
  bcs await0
 await0
  lda #$96      ;1.75 sec delay
@@ -5296,9 +5348,9 @@ dlwhtl sta 56223,y
  dey
  bpl dlwhtl
  lda motype
- cmp #$04
+ cmp #mtm1604
  bcs dialn2
- cmp #$02
+ cmp #mt1660
  bcc dialn2
  lda tonpul
  beq dialn2
@@ -5328,7 +5380,7 @@ dlini2
  ldx #$00
  stx numptr
  lda motype
- cmp #$05
+ cmp #mt1670
  bcc dlgetn
  jmp smrtdl
 dlgetn
@@ -5362,9 +5414,9 @@ dltpc
  ldx tonpul    ;tone or pulse?
  beq plsdal    ;(if tone, must be
  ldx motype    ; a 1660)
- cpx #$02
+ cpx #mt1660
  bcc plsdal
- cpx #$04
+ cpx #mtm1604
  bcs plsdal
  jmp tonedl
 plsdal
@@ -5406,7 +5458,7 @@ dlend
  lda #$0d
  jsr chrout
  lda motype
- cmp #$02       ;don't wait for
+ cmp #mt1660    ;don't wait for
  bne carrwt     ;carrier if 1660
  jmp rt1660     ;w/o car.det.
 carrwt
@@ -5434,7 +5486,7 @@ carred
  jmp redial     ;go to dial again
 cargot
  lda motype
- cmp #$04       ;if 1064, tell
+ cmp #mtm1604   ;if 1064, tell
  bne cargt2     ;it to send a
  lda #$ff       ;carrier
  sta modreg
@@ -5539,7 +5591,7 @@ caldig    ;convert ascii alpha-
  cmp #'0'
  bne cald2
  ldx motype
- cpx #$03
+ cpx #mt1660cd
  beq caldd
  lda #$0a
  rts
@@ -5680,7 +5732,7 @@ haydoo
  cmp #$06   ;paradyne modem?
  bcc hayda0 ;nope
 parda1
- ldx #$05
+ ldx #modemln
  jsr chkout
  lda #<prptxt
  ldy #>prptxt
@@ -5715,12 +5767,12 @@ parda2
  jmp haydas
 hayda0
  lda baudrt
- cmp #$07    ;2400 baud?
+ cmp #bps24    ;2400 baud?
  bne haydab
- lda #$06    ;go to 1200 to
+ lda #bps12    ;go to 1200 to
  jsr baudst  ;send commands
 haydab
- ldx #$05
+ ldx #modemln
  jsr chkout
  lda #<pretxt
  ldy #>pretxt
@@ -5746,7 +5798,7 @@ hayda4  stx numptr
  ldx numptr
  lda #14
  sta 56223,x
- ldx #$05
+ ldx #modemln
  jsr chkout
  ldx numptr
  lda numbuf,x
@@ -5772,7 +5824,7 @@ hayda5
  lda #$00
  sta $a1
  sta $a2
-hayda6  ldx #$05
+hayda6  ldx #modemln
  jsr chkin
  jsr getin
  and #$5f
@@ -5786,7 +5838,7 @@ hayda6  ldx #$05
  jsr getin
  cmp #$03    ;run/stop
  bne hayda7
- ldx #$05
+ ldx #modemln
  jsr chkout
  lda #$0d
  jsr chrout
@@ -5802,7 +5854,7 @@ hayda8
  lda $a2
  cmp #$90
  bcc hayda6
- ldx #$05
+ ldx #modemln
  jsr chkout
  lda #$0d
  jsr chrout
@@ -5832,7 +5884,7 @@ haycon  jsr haydel
 haydel
  lda #$e8
  sta $a2
- ldx #$05
+ ldx #modemln
  jsr chkin
 haydll  jsr getin
  cmp #$0d
@@ -5922,7 +5974,7 @@ selmdm
  lda motype
  bne selmd2
 md1650
- lda #$00
+ lda #mt1650
  sta motype
 mostrd     ;supposedly standard
  lda #$20  ;settings
@@ -5933,10 +5985,10 @@ mostrd     ;supposedly standard
  sta mopo4
  rts
 selmd2
- cmp #$01
+ cmp #mthes
  bne selmd3
 mhesii
- lda #$01
+ lda #mthes
  sta motype
  lda #$00
  sta mopo1
@@ -5948,10 +6000,10 @@ mhesii
  sta mopo4
  rts
 selmd3
- cmp #$02
+ cmp #mt1660
  bne selmd4
 md1660
- lda #$02
+ lda #mt1660
  sta motype
 mnewsd    ;c='s new "standard"
  lda #$00
@@ -5962,17 +6014,17 @@ mnewsd    ;c='s new "standard"
  sta mopo4
  rts
 selmd4
- cmp #$03
+ cmp #mt1660cd
  bne selmd5
-mt1660       ;same modem, but
- lda #$03    ;with carr. detect
+md1660cd       ;same modem, but
+ lda #mt1660cd    ;with carr. detect
  sta motype
  jmp mnewsd
 selmd5
- cmp #$04
+ cmp #mtm1604
  bne selmd6
 mp1064       ;<-this modem sucks!
- lda #$04
+ lda #mtm1604
  sta motype
  lda #$7e
  sta mopo1
@@ -5982,16 +6034,27 @@ mp1064       ;<-this modem sucks!
  sta mopo4
  rts
 selmd6
- cmp #$05
- bne paradm
+ cmp #mt1670
+ bne selmd7
 hayesm      ;1670/hayes compat
- lda #$05
+ lda #mt1670
  sta motype
  jmp mnewsd
+selmd7
+.if swiftlib
+ cmp #mtparadm  ; paradyne
+ bne swiftlnk
+.endif
 paradm
- lda #$06
+ lda #mtparadm
  sta motype
  jmp mnewsd
+.if swiftlib
+swiftlnk
+ lda #mtswiftl
+ sta motype
+ jmp mnewsd
+.endif
 ;
 disnmi
  pha
@@ -6013,9 +6076,7 @@ quittm
  pha
  rts          ;r/s restore
 decode
-.if .not(historical)
- rts
-.else
+.if historical
  lda #0
  sta locat
  lda #>stadec
@@ -6051,7 +6112,9 @@ deco4
  rts
 .byt 0
 decoen
-.endif
+.else ; historical
+ rts
+.endif ; historical
 viewmg
  lda #<ampag1
  ldy #>ampag1
@@ -6446,7 +6509,22 @@ f7chs1
 ;baud rate change
  inc baudrt
  lda baudrt
+.if historical
  and #$07
+.else
+.if swiftlib
+ ldx motype
+ cpx #mtswiftl
+ bne :+
+ cmp #bpsslmax
+ bcc :++
+:
+.endif
+ cmp #bpsmax
+ bcc :+
+ lda #0
+:
+.endif
  sta baudrt
  jsr baud
  jmp f7opts
@@ -6464,12 +6542,19 @@ f7chs3
 ;change modem type
  inc motype
  lda motype
+.if swiftlib
+ cmp #$08
+.else
  cmp #$07
+.endif
  bcc incmod
  lda #$00
  sta motype
 incmod
  jsr selmdm
+.if swiftlib
+ jsr baud
+.endif
  jmp f7opts
 f7chsp
  cmp #'p'
@@ -6545,8 +6630,30 @@ prret2 .byt 3,20,7,159,'RETURN',13,0
 ttdtxt .byt 3,8,31,18,161,42,182,146,'Tone ',0
 ttptxt .byt 3,8,31,18,161,42,182,146,'Pulse',0
 ttntxt .byt 3,8,33,'      ',0
-;
-bpsspd .byt 44,1,94,1,144,1,194,1,244,1,38,2,176,4,96,9 ;rates
+; baud rates:
+bpsspd .byt <300,>300
+.if historical
+ .byt <350,>350,<400,>400,<450,>450,<500,>500,<550,>550
+.endif
+ .byt <1200,>1200,<2400,>2400
+.if swiftlib
+ .byt <4800,>4800,<9600,>9600,<19200,>19200,<38400,>38400
+swiftbr ; slParms values matching above baud rates
+ .byt $03, $05, $06, $07, $08, $09, $0a
+.endif
+; indexes of 1200, 2400, and max avail+1 baud rates
+.if historical
+bps12 = 6
+bps24 = 7
+bpsmax= 8
+.else
+bps12 = 1
+bps24 = 2
+bpsmax= 3
+.if swiftlib
+bpsslmax= 7
+.endif
+.endif
 bdntsc .byt $94,$79,$b0,$a0,$00
 .if historical
 ;a missing comma here after the first element was silently ignored by the cbm
@@ -6560,8 +6667,33 @@ bdrati .byt $72,$c3,$bb,$f3,$a8
 bdaddc .byt $81,$02,$d0,$e5,$60
 parabd .byt '%s',0
 baud
+.if swiftlib
+ lda motype
+ cmp #mtswiftl
+ beq slset
+ jsr slShutdown
+ jsr rsopen
+ jmp slskip
+slset
+ lda #modem
+ jsr close
+ ldy #$de ;#$df
+ lda #$00
+ ldx #0
+ jsr slInit     ; .AY=iobase, .X=hackedSlFlag
+ ;;jsr outvec ;change chrout vec.
+ ldx baudrt
+ lda swiftbr, x ; $06=2400; $08=9600; $0a=38400
+ ldx #$00       ; 8n1
+ jsr slParms    ; .A=params, .X=parity -> .CS=err#.A
+ bcc slgood
+ jsr bell
+slgood
+ jmp baudfin
+slskip
+.endif
  ldx motype
- cpx #$06
+ cpx #mtparadm
  bne baud0
  jsr prdspd
 baud0
@@ -6570,10 +6702,10 @@ baudst
  asl a
  tax
  lda bpsspd,x
-.if hack24 .and(.not(historical))
+.if hack24
  ; temporary hackish fix for now in lieu of rewriting chrin/chrout routines
- cpx #14  ; if its <2400 baud, skip patch
- bcc baudst2
+ cpx #bps24*2  ; if its not 2400 baud, skip patch
+ bne baudst2
  sec
  sbc #$03 ; decrement 2400 baud rate a little so we can keep up.
 baudst2
@@ -6583,6 +6715,12 @@ baudst2
  sta $03
  ldy $02
  lda $03
+.if swiftlib
+ cpx #bpsmax ; max non-swiftlink speed
+ bcc :+
+ jmp baudfin
+:
+.endif
  jsr $b391  ;baud to fac1
  lda #<bdntsc
  ldy #>bdntsc
@@ -6640,23 +6778,30 @@ baud4
  sta $0296
  lda $029b
  sta $029c
-.if toward24 .and(.not(historical))
+baudfin
+.if toward24
+.if swiftlib
+ lda motype
+ cmp #mtswiftl
+ beq baudfin2
+.endif
  jsr rssetup ; use George Hug's NMI/chkin/receive  kernel patches
 ; but for some reason his chrout/bsout doesn't work for 2400
 ; baud.  Keep our own chrout vector impl:
+baudfin2
 .endif
  jmp outvec ;change chrout vec.
 prdspd
  lda baudrt
  beq prdsp2
- cmp #$06
+ cmp #bps12
  beq prdsp2
  rts
 prdsp2
- eor #$06
+ eor #bps12
  jsr baudst
 prdsp3
- ldx #$05
+ ldx #modemln
  jsr chkout
  lda #<parabd
  ldy #>parabd
@@ -6679,7 +6824,19 @@ op2txt .byt '1650 compatibles '
  .byt 'HES II/Mitey Mo  1660/modem300    '
  .byt '1660 + CD        MPP 1064         '
  .byt '1670/Hayes       Paradyne DTU     '
+.if swiftlib
+ .byt 'SwiftLink DE     '
+.endif
 op3txt .byt 'Punter','XModem'
+mt1650	= 0
+mthes	= 1
+mt1660	= 2
+mt1660cd= 3
+mtm1604	= 4
+mt1670	= 5
+mtparadm= 6
+mtswiftl= 7
+mtlast  = 7
 prmtab
  lda #$0d
  jsr chrout
@@ -6750,9 +6907,9 @@ prmlop
  ldx motype
  jsr prmprt
  lda motype
- cmp #$02
+ cmp #mt1660
  bcc notogm
- cmp #$04
+ cmp #mtm1604
  beq notogm
 ystogm
  lda tonpul
@@ -6874,10 +7031,10 @@ outv13  rts
 ctrlv  jmp main2
 ;
 config
-.if toward24 .and (.not(historical))
-baudrt .byt $07 ;1200 baud def
+.if toward24
+baudrt .byt bps24 ;2400 baud def
 .else
-baudrt .byt $06 ;2400 baud def
+baudrt .byt bps12 ;1200 baud def
 .endif
 tonpul .byt 0   ;0=pulse, 1=tone
 mopo1  .byt $20 ;pick up
@@ -6892,10 +7049,13 @@ motype .byt $00 ;0=1650, 1=hes ii
                 ;5=1670/hayes
                 ;6=paradyne dtu
 ;
-.if toward24 .and (.not(historical))
+.if toward24
 .include "newmodem2400.s"
 .endif
 
+.if swiftlib
+.include "swiftlib.s"
+.endif
 ;
 phbmem ;reserve mem for phbook
 .byt 0,6,'Dig. Paint Palace ','281-7009'
@@ -6999,22 +7159,13 @@ ampag1
 .byt 153,'changes',13,'the background color.   ',5,'Press a key...',0
 ampag2
 .byt 147,10,155,15,14,'      ',28,'C',129,'C',158,'G',30,'M',31,'S',5,'! Term '
-.if .not(historical)
-.byt '2016a (C) 2016',13
-.else
+.if historical
 .byt '5.5, (C) 1988',13
+.else
+.byt '2016a (C) 2016',13
 .endif
 .byt ' by Craig Smith, All Rights Reserved.',13,13
-.if .not(historical)
-.byt 153,'This program is open-source.',13
-.byt 'Redistribution and use in source and',13
-.byt 'binary forms, with or without modifi-',13
-.byt 'cation, are permitted under the terms',13
-.byt 'of the BSD 3-clause license.',13,13
-.byt 'For details, or to contribute, visit:',13
-.byt 158,' https://github.com/spathiwa/ccgmsterm',13,13
-.byt 153
-.else
+.if historical
 .byt 153,'This program is ',39,'Share-Ware'
 .byt '.',39,13,'You are granted a limited license to',13,'use, copy, &'
 .byt ' distribute this program',13,'in its ',155,'UNMODIFIED ',153
@@ -7030,6 +7181,15 @@ ampag2
 .byt 'a disk in a reusable disk mailer,',13,'sufficient postage, and a '
 .byt 'short note',13,'about how you',39,'d like to change it.',13,154
 .byt 'Thanks, and I hope you like the',13,'new version!!           '
+.else
+.byt 153,'This program is open-source.',13
+.byt 'Redistribution and use in source and',13
+.byt 'binary forms, with or without modifi-',13
+.byt 'cation, are permitted under the terms',13
+.byt 'of the BSD 3-clause license.',13,13
+.byt 'For details, or to contribute, visit:',13
+.byt 158,' https://github.com/spathiwa/ccgmsterm',13,13
+.byt 153
 .endif
 .byt 5,'Press a key...',0,0
 endall
