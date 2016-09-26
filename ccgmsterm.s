@@ -6839,7 +6839,7 @@ op2txt .byt '1650 compatibles '
  .byt '1660 + CD        MPP 1064         '
  .byt '1670/Hayes       Paradyne DTU     '
 .if swiftlib
- .byt 'SwiftLink DE     '
+ .byt 'SwiftLink/Hayes  '
 .endif
 op3txt .byt 'Punter','XModem'
 mt1650	= 0
@@ -7051,13 +7051,22 @@ bddflt = bps24 ;2400 baud def
 bddflt = bps12 ;1200 baud def
 .endif
 baudrt .byt bddflt
+.if historical
 tonpul .byt 0   ;0=pulse, 1=tone
+.else
+tonpul .byt 1   ;0=pulse, 1=tone
+.endif
 mopo1  .byt $20 ;pick up
 mopo2  .byt $00 ;hang up
 mopo3  .byt $20 ;click on (pu)
 mopo4  .byt $00 ;click off (hu)
 ;
-motype .byt $00 ;0=1650, 1=hes ii
+.if historical
+motype .byt $00
+.else
+motype .byt $05 ; make Hayes default
+.endif
+                ;0=1650, 1=hes ii
 ;^modem type^   ;2=1660/modem 300
                 ;3=1660w/car.det.
                 ;4=vip mpp 1064
