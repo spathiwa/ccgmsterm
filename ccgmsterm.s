@@ -42,8 +42,9 @@ historical = 0	; define to 1 to make this source produce an exact image of
 ;
 ; Conditional compilation symbols:
 ;
-toward24 = MODERN	; Enable "Toward 2400" new modem chrout/chkin/nmi routines by George Hug
-xmodfix  = MODERN	; Enable XModem last char fix
+toward24  = MODERN	; Enable "Toward 2400" new modem chrout/chkin/nmi routines by George Hug
+xmodfix   = MODERN	; Enable XModem last char fix
+nohayes12 = MODERN	; Don't downgrade to 1200 baud to send commands on Hayes modems
 
 v55plus  = 1		; Enable the bug fix and minor changes made in 5.5+
 hack24   = 0		; Enable 2400 baud hack from alwyz (superceded by toward24 fix)
@@ -5782,12 +5783,16 @@ parda1
 parda2
  jmp haydas
 hayda0
+.if nohayes12
+; probably not necessary with any h/w still in use today
+.else
  lda baudrt
  cmp #bps24    ;2400 baud?
  bne haydab
- lda #bps12    ;go to 1200 to
- jsr baudst  ;send commands
+ lda #bps12    ;downgrade to 1200 to
+ jsr baudst    ;send commands
 haydab
+.endif
  ldx #modemln
  jsr chkout
  lda #<pretxt
