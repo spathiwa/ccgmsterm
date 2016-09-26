@@ -6686,6 +6686,12 @@ baud
  cmp #mtswiftl
  beq slset
  jsr slShutdown
+ lda baudrt
+ cmp #bpsmax
+ bcc :+
+ lda #bpsmax-1
+ sta baudrt
+:
  jsr rsopen
  jmp slskip
 slset
