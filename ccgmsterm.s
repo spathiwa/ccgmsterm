@@ -6528,6 +6528,10 @@ f7chs1
 .if historical
  and #$07
 .else
+ cmp #1		; skip 350..550 directly to 1200
+ bne :+
+ lda #bps12
+:
 .if swiftlib
  ldx motype
  cpx #mtswiftl
@@ -6648,27 +6652,21 @@ ttptxt .byt 3,8,31,18,161,42,182,146,'Pulse',0
 ttntxt .byt 3,8,33,'      ',0
 ; baud rates:
 bpsspd .byt <300,>300
-.if historical
+; 350-550 are not visible now but placeholders left so
+; saved phone books are compatible
  .byt <350,>350,<400,>400,<450,>450,<500,>500,<550,>550
-.endif
  .byt <1200,>1200,<2400,>2400
 .if swiftlib
  .byt <4800,>4800,<9600,>9600,<19200,>19200,<38400,>38400
 swiftbr ; slParms values matching above baud rates
- .byt $03, $05, $06, $07, $08, $09, $0a
+ .byt $03, $03, $03, $03, $03, $03, $05, $06, $07, $08, $09, $0a
 .endif
 ; indexes of 1200, 2400, and max avail+1 baud rates
-.if historical
 bps12 = 6
 bps24 = 7
 bpsmax= 8
-.else
-bps12 = 1
-bps24 = 2
-bpsmax= 3
 .if swiftlib
-bpsslmax= 7
-.endif
+bpsslmax= 12
 .endif
 bdntsc .byt $94,$79,$b0,$a0,$00
 .if historical
@@ -7048,10 +7046,11 @@ ctrlv  jmp main2
 ;
 config
 .if toward24
-baudrt .byt bps24 ;2400 baud def
+bddflt = bps24 ;2400 baud def
 .else
-baudrt .byt bps12 ;1200 baud def
+bddflt = bps12 ;1200 baud def
 .endif
+baudrt .byt bddflt
 tonpul .byt 0   ;0=pulse, 1=tone
 mopo1  .byt $20 ;pick up
 mopo2  .byt $00 ;hang up
@@ -7074,7 +7073,7 @@ motype .byt $00 ;0=1650, 1=hes ii
 .endif
 ;
 phbmem ;reserve mem for phbook
-.byt 0,6,'Dig. Paint Palace ','281-7009'
+.byt 0,bddflt,'Dig. Paint Palace ','281-7009'
 .byt 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 .byt 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 .byt 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
