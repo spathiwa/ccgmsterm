@@ -1843,7 +1843,11 @@ input
  jmp inputl
 inpset
  stx max
+.if historical
  cmp #$00
+.else
+ cpy #$00
+.endif
  beq inpcon
  jsr outstr
 inpcon
@@ -4801,7 +4805,11 @@ xortog
 newent
  jsr posnam
  ldx #18
+.if historical
  lda #0
+.else
+ ldy #0
+.endif
  jsr inpset
  ldy #2
  lda (nlocat),y
@@ -4866,7 +4874,11 @@ newen7
  jsr chrout
  lda #7
  sta 211
+.if historical
  lda #0
+.else
+ ldy #0
+.endif
  ldx #32
  jsr inpset
  ldy #20
@@ -5272,7 +5284,11 @@ dalun2 sta 1951,y
  bpl dalun2
  lda #7
  sta 211
+.if historical
  and #0
+.else
+ ldy #0
+.endif
  ldx #32
  jsr input
  bne dalun3
