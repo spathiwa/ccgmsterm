@@ -6716,7 +6716,7 @@ baudst2
  ldy $02
  lda $03
 .if swiftlib
- cpx #bpsmax ; max non-swiftlink speed
+ cpx #bpsmax*2 ; max non-swiftlink speed
  bcc :+
  jmp baudfin
 :
