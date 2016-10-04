@@ -227,7 +227,21 @@ fulbuf  jsr     strtup
 notmod  pla             ; back to old bsout.
         jmp     oldout
 ;-----------------------------------
-nchkin  jsr     findfn  ; new chkin
+nchkin
+.ifdef ccgms ; if using swiftlib, allow chkin of modem when swiftlink active
+.if swiftlib ; to 'work'. Overridden chrin/getin/chrout routines check this
+; to map to slGetByte/slPutByte calls
+        cpx     #modemln
+        bne     nchkin2
+        lda     swiftout
+        beq     nchkin2
+        lda     #$02
+        sta     $99
+        rts
+nchkin2
+.endif
+.endif
+        jsr     findfn  ; new chkin
         bne     nosuch
         jsr     devnum
         lda     $ba
@@ -268,6 +282,16 @@ ngetin  lda     $99     ; new getin
 ;
 rsget   sta     $9e     ; input from modem
         sty     $97
+.ifdef ccgms ; see comment at nchkin
+.if swiftlib
+        ldy     swiftout
+        beq     rsget1
+        jsr     slGetByte
+        ldy     $97
+        rts
+rsget1
+.endif
+.endif
         ldy     ridbs
         cpy     ridbe   ; buffer empty?
         beq     ret2    ; yes.

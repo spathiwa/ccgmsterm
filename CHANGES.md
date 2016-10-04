@@ -7,7 +7,7 @@ Version 2016a
  - Fixed 2400 baud support using code from "Toward 2400" article
    in Transactor, Vol 9 Issue 3.
  - Fixed XModem upload last character drop bug
- - Experimental SwiftLink support (DE00 only)
+ - Add CMD SwiftLink support ($DE00)
 
 Version 5.5+ (09/14/2016)
 ------------------------

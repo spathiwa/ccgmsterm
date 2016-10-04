@@ -45,10 +45,11 @@ historical = 0	; define to 1 to make this source produce an exact image of
 toward24  = MODERN	; Enable "Toward 2400" new modem chrout/chkin/nmi routines by George Hug
 xmodfix   = MODERN	; Enable XModem last char fix
 nohayes12 = MODERN	; Don't downgrade to 1200 baud to send commands on Hayes modems
+autocrlf  = MODERN      ; ASCII converts CR to CR/LF
 
 v55plus  = 1		; Enable the bug fix and minor changes made in 5.5+
 hack24   = 0		; Enable 2400 baud hack from alwyz (superceded by toward24 fix)
-swiftlib = 0;MODERN	; Experimental/unfinished
+swiftlib = MODERN	; Experimental/unfinished
 
 .if historical
 .feature pc_assignment
@@ -275,7 +276,29 @@ pnt37 lda #$00
  sta $96
  rts
  nop
-pnt38 jmp pnt122
+pnt38
+.if swiftlib
+ lda swiftout
+ beq pnt38c
+ tya
+ pha
+ jsr slGetByte
+ bcs pnt38a
+ ldy #0
+ cpx #0
+ bne pnt38b
+pnt38a
+ lda #0
+ ldy #2
+pnt38b
+ sty $96
+ sta pnt10
+ pla
+ tay
+ rts
+pnt38c
+.endif
+ jmp pnt122
  nop
  nop
 pnt39 cmp pnt13
@@ -1166,9 +1189,8 @@ mnback
  jmp main2
 mainop
 .if swiftlib
- ldx motype
- cpx #mtswiftl
- bne :+
+ ldx swiftout
+ beq :+
  jsr slPutByte   ; .A=byte -> .CS=err#.A
  jmp :++
 :
@@ -1223,9 +1245,8 @@ specc2
  stx 53272
 specc3
 .if swiftlib
- ldx motype
- cpx #mtswiftl
- beq :+
+ ldx swiftout
+ bne :+
 .endif
  ldx #modemln
  jsr chkin
@@ -1698,15 +1719,22 @@ drcont
  ldy #0
 drcon2 jsr getin
  jsr chrout
+.if swiftlib
+.else
  lda #$fd
  sta $a2
 drcodl lda $a2
  bne drcodl
+.endif
  iny
  cpy #27
  bcc drcon2
  lda #$0d
  jsr chrout
+.if autocrlf
+ lda #$0a
+ jsr chrout
+.endif
  jsr clrchn
  lda #$0d
  jsr chrout
@@ -2629,7 +2657,28 @@ xmmget
  lda #0
  sta $a1
  sta $a2
+.if swiftlib
+ lda swiftout
+ bne xmogt0
+.endif
  jsr $f04f ;"chkin" modem
+.if swiftlib
+ clc
+ bcc xmogt1
+xmogt0
+ tya
+ pha
+ jsr slGetByte
+ bcs xmmgt2s
+ cpx #0
+ beq xmmgt2s
+ tax
+ pla
+ tay
+ txa
+ ldx #0
+ rts
+.endif
 xmogt1
  jsr $f14e ;rs232 input
  tax
@@ -2639,15 +2688,30 @@ xmogt1
  txa
  ldx #0
  rts
+.if swiftlib
+xmmgt2s
+ pla
+ tay
+.endif
 xmmgt2
  jsr xchkcm
  lda $a1
  cmp xmodel
+.if swiftlib
+ bcc xmmgt3
+.else
  bcc xmogt1
+.endif
  jsr clrchn
  and #0
  ldx #1
  rts
+.if swiftlib
+xmmgt3
+ lda swiftout
+ beq xmogt1
+ bne xmogt0
+.endif
 xincbd
  lda #':'
  jsr goobad
@@ -2702,8 +2766,8 @@ xmoex4
 xmorcv
  tsx
  stx xmostk
- jsr 61310
- jsr 61310
+ jsr $ef7e
+ jsr $ef7e
  jsr xmoset
  beq xmorcp
 xmorc0
@@ -3214,7 +3278,7 @@ dwwait
  lda $a2
  cmp #85
  bcc dwwait
- jsr 61310
+ jsr $ef7e
  jsr p49173
  jsr p49155
  jmp xfrend
@@ -3271,7 +3335,7 @@ sndfil
  tay
  jsr setlfs
  jsr open
- ldx #$05
+ ldx #modemln
  jsr chkout
  lda #15
  jsr chrout
@@ -3313,9 +3377,12 @@ dskmo
  jsr chkin
  jsr getin
 timdel
+.if swiftlib
+.else
  bit bufflg
  bvc chstat
  jsr tmsetl
+.endif
 chstat
  pha
  lda status
@@ -3333,12 +3400,18 @@ chstat
  pla
  jmp chkkey
 dskmo1
- ldx #05
+ ldx #modemln
  jsr chkout
  pla
  ldx grasfl
  beq dskmo2
  jsr catosa
+.if autocrlf
+ cmp #$0d
+ bne dskmo2
+ jsr chrout
+ lda #$0a
+.endif
 dskmo2
  jsr chrout
 chkkey
@@ -5992,6 +6065,10 @@ losve2  jsr getin
  jmp clrchn
 ;
 selmdm
+.if swiftlib
+ lda #0
+ sta swiftout
+.endif
  lda motype
  bne selmd2
 md1650
@@ -6072,6 +6149,8 @@ paradm
  jmp mnewsd
 .if swiftlib
 swiftlnk
+ lda #1
+ sta swiftout
  lda #mtswiftl
  sta motype
  jmp mnewsd
@@ -6538,9 +6617,8 @@ f7chs1
  lda #bps12
 :
 .if swiftlib
- ldx motype
- cpx #mtswiftl
- bne :+
+ ldx swiftout
+ beq :+
  cmp #bpsslmax
  bcc :++
 :
@@ -6687,9 +6765,8 @@ bdaddc .byt $81,$02,$d0,$e5,$60
 parabd .byt '%s',0
 baud
 .if swiftlib
- lda motype
- cmp #mtswiftl
- beq slset
+ lda swiftout
+ bne slset
  jsr slShutdown
  lda baudrt
  cmp #bpsmax
@@ -6806,9 +6883,8 @@ baud4
 baudfin
 .if toward24
 .if swiftlib
- lda motype
- cmp #mtswiftl
- beq baudfin2
+ lda swiftout
+ bne baudfin2
 .endif
  jsr rssetup ; use George Hug's NMI/chkin/receive  kernel patches
 ; but for some reason his chrout/bsout doesn't work for 2400
@@ -6853,6 +6929,9 @@ op2txt .byt '1650 compatibles '
  .byt 'SwiftLink/Hayes  '
 .endif
 op3txt .byt 'Punter','XModem'
+.if swiftlib
+swiftout .byt 0  ; 1 = output using swiftlink lib
+.endif
 mt1650	= 0
 mthes	= 1
 mt1660	= 2
@@ -6860,8 +6939,12 @@ mt1660cd= 3
 mtm1604	= 4
 mt1670	= 5
 mtparadm= 6
+.if swiftlib
 mtswiftl= 7
 mtlast  = 7
+.else
+mtlast  = 6
+.endif
 prmtab
  lda #$0d
  jsr chrout
@@ -6954,8 +7037,28 @@ notogm  lda #<ttntxt
  ldy #>ttntxt
  bne prtogm
 ;
+.if swiftlib
+nckout
+ cpx #5
+ bne :++
+ ldx swiftout
+ beq :+
+ ldx #2
+ stx $9a
+ rts
+:
+ ldx #5
+:
+ jmp $f250
+.endif
 prtvec .byt $ca,$f1
 outvec  ;change chrout vec.
+.if swiftlib
+ lda #<nckout
+ sta $0320
+ lda #>nckout
+ sta $0321
+.endif
  lda $0326
  cmp #<printv
  bne outv1
@@ -6995,7 +7098,28 @@ outndl
 outv3 bcc outv4
  pla
  jmp (prtvec)
-outv4 lsr a
+outv4
+.if swiftlib
+ lda swiftout
+ beq :+
+ pla
+ sta $9e
+ txa
+ pha
+ tya
+ pha
+ lda $9e
+ jsr slPutByte
+ pla
+ tay
+ pla
+ tax
+ lda $9e
+ rts
+:
+ lda $9a 
+.endif
+ lsr a
  pla
  sta $9e
  txa
@@ -7083,6 +7207,7 @@ motype .byt $05 ; make Hayes default
                 ;4=vip mpp 1064
                 ;5=1670/hayes
                 ;6=paradyne dtu
+                ;7=swiftlink rs-232
 ;
 .if toward24
 .include "newmodem2400.s"
