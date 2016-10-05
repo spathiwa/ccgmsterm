@@ -4821,7 +4821,7 @@ shobau
  sta 646
  ldy #1
  lda (nlocat),y
- and #7
+ and #baudmask
  asl a
  tay
  ldx bpsspd,y
@@ -4829,6 +4829,17 @@ shobau
  jsr outnum
  lda #' '
  jsr chrout
+.if swiftlib
+ ldy #1
+ lda (nlocat),y
+ and #baudmask
+ cmp #bps12
+ bcs :+
+ lda #' '
+ jsr chrout
+ jsr chrout
+:
+.endif
  lda #19
  sta 211
  lda shocol+1
@@ -4994,11 +5005,19 @@ newenb
  lda #<hp1msg
  ldy #>hp1msg
  jsr prtstt
- lda #7
+.if swiftlib
+ lda #bpsslmax
+.else
+.if historical
+ lda #bpsmax-1
+.else
+ lda #bpsmax
+.endif
+.endif
  sta tmpmax
  ldy #1
  lda (nlocat),y
- and #7
+ and #baudmask
  sta tmpopt
 newenc
  lda #1
@@ -5038,7 +5057,7 @@ newenf
  and #$80
  sta tmptmp
  lda (nlocat),y
- and #7
+ and #baudmask
  ora tmptmp
  sta (nlocat),y
  jmp newenf
@@ -5066,7 +5085,11 @@ newsel
  cmp tmpmax
  bcc newsl1
  lda #0
+.if historical
  sta tmpmax
+.else
+ sta tmpopt
+.endif
 newsl1 sec
  rts
 newsl2 cmp #'-'
@@ -5226,7 +5249,7 @@ dialc2
 dialc3
  ldy #1
  lda (nlocat),y
- and #7
+ and #baudmask
  sta baudrt
  jsr baud
  ldy #1
@@ -6617,6 +6640,7 @@ f7chs1
 .if historical
  and #$07
 .else
+ and #baudmask
  cmp #1		; skip 350..550 directly to 1200
  bne :+
  lda #bps12
@@ -6759,6 +6783,9 @@ bps24 = 7
 bpsmax= 8
 .if swiftlib
 bpsslmax= 12
+baudmask= 15
+.else
+baudmask= 7
 .endif
 bdntsc .byt $94,$79,$b0,$a0,$00
 .if historical
