@@ -1283,7 +1283,7 @@ bufchk
  cpx #0
  bne nopass
 :
- jmp mnback
+ jmp main2
 .endif
 putbuf
  ldx buffoc
@@ -3776,6 +3776,11 @@ mrctxt .byt 13,14,5,18,32,'Multi-Receive ',13,13
  .byt 159,'Waiting for header...C= aborts.',13,0
 ;multi - choose files
 mltdir
+.if historical
+.else
+ lda #$00
+ sta status
+.endif
  lda diskdv
  jsr listen
  lda #$f0

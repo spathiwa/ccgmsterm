@@ -62,12 +62,10 @@ rssetup lda     #<nmi64
         ldy     #>nchrin
         sta     $0324
         sty     $0325
-.ifndef ccgms ; we don't need getin; change in semantics messes up ccgms term
         lda     #<ngetin
         ldy     #>ngetin
         sta     $032a
         sty     $032b
-.endif
         rts
 ;-------------------------
 nmi64   pha	; new nmi handler
@@ -275,8 +273,9 @@ nchrin  lda     $99     ; new chrin
         cmp     #$02
         beq     rsget
         jmp     ochrin
-ngetin  lda     $99     ; new getin
-        cmp     #$02
+ngetin  ldx     $99     ; new getin
+        lda     #$00
+        cpx     #$02
         beq     rsget
         jmp     ogetin
 ;
