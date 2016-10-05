@@ -6931,7 +6931,7 @@ op2txt .byt '1650 compatibles '
  .byt '1660 + CD        MPP 1064         '
  .byt '1670/Hayes       Paradyne DTU     '
 .if swiftlib
- .byt 'SwiftLink/Hayes  '
+ .byt 'SwiftLnk/Hayes   '
 .endif
 op3txt .byt 'Punter','XModem'
 .if swiftlib
