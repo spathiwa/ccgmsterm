@@ -6714,7 +6714,11 @@ f7chsb
 ;
 scracf .byt 's0:',0
 svctxt .byt $93,13,5,'Filename: ',0
+.if historical
 conffn .byt 'ccgms/phone',0
+.else
+conffn .byt 'ccgms-phone.cfg',0,0,0
+.endif
 f7thob .byt 2
 f7mtxt .byt $93,16,14,5,'   Dialer/Parameters',13
  .byt 31,'   ',163,163,163,163,163,163,163,163,163,163,163,163,163,163
@@ -7184,6 +7188,14 @@ outv13  rts
 ;goes here instead
 ctrlv  jmp main2
 ;
+.if toward24
+.include "newmodem2400.s"
+.endif
+
+.if swiftlib
+.include "swiftlib.s"
+.endif
+;
 config
 .if toward24
 bddflt = bps24 ;2400 baud def
@@ -7213,14 +7225,6 @@ motype .byt $05 ; make Hayes default
                 ;5=1670/hayes
                 ;6=paradyne dtu
                 ;7=swiftlink rs-232
-;
-.if toward24
-.include "newmodem2400.s"
-.endif
-
-.if swiftlib
-.include "swiftlib.s"
-.endif
 ;
 phbmem ;reserve mem for phbook
 .byt 0,bddflt,'Dig. Paint Palace ','281-7009'
