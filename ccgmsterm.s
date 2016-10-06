@@ -1006,6 +1006,8 @@ stodv3
 rsopen          ;open rs232 file
 .if swiftlib
  jsr slShutdown
+ lda $9a	; current device
+ pha
 .endif
  jsr clall
  lda #modemln
@@ -1021,6 +1023,14 @@ rsopen          ;open rs232 file
  sta 248       ;so they don't
  lda #>routpt  ;overlap termbuffer
  sta 250
+.if swiftlib
+ pla		; if previously chk'd out to modem,
+ cmp #$02
+ bne :+
+ ldx #modemln
+ jsr chkout
+:
+.endif
 ercopn
  lda #$02       ;open err chan
  ldx #<dreset
