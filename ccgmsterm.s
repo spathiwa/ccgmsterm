@@ -5091,6 +5091,17 @@ newsel
  cmp #'+'
  bne newsl2
  inc tmpopt
+.if swiftlib
+ lda tmpmax
+ cmp #2
+ beq :+
+ lda tmpopt
+ cmp #1
+ bne :+
+ lda #bps12
+ sta tmpopt
+:
+.endif
  lda tmpopt
  cmp tmpmax
  bcc newsl1
@@ -5100,12 +5111,27 @@ newsel
 .else
  sta tmpopt
 .endif
-newsl1 sec
+newsl1
+ sec
  rts
 newsl2 cmp #'-'
  bne newsl3
  dec tmpopt
+.if swiftlib
+ bmi :+
+ lda tmpmax
+ cmp #2
+ beq newsl1
+ lda tmpopt
+ cmp #bps12-1
+ bne newsl1
+ lda #0
+ sta tmpopt
+ beq newsl1
+:
+.else
  bpl newsl1
+.endif
  ldx tmpmax
  dex
  stx tmpopt
@@ -5857,8 +5883,12 @@ haydal      ;hayes/paradyne dial
  sta tdelay
 haydoo
  lda motype
- cmp #$06   ;paradyne modem?
+ cmp #mtparadm   ;paradyne modem?
+.if swiftlib
+ bne hayda0 ;nope
+.else
  bcc hayda0 ;nope
+.endif
 parda1
  ldx #modemln
  jsr chkout
